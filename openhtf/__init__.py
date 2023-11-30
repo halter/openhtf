@@ -113,6 +113,7 @@ PhaseSequence = openhtf.core.phase_collections.PhaseSequence
 Subtest = openhtf.core.phase_collections.Subtest
 
 diagnose = openhtf.core.phase_descriptor.diagnose
+
 measures = openhtf.core.phase_descriptor.measures
 PhaseDescriptor = openhtf.core.phase_descriptor.PhaseDescriptor
 PhaseNameCase = openhtf.core.phase_descriptor.PhaseNameCase
