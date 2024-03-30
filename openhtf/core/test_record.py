@@ -253,7 +253,7 @@ class TestRecord(object):
     metadata['config'] = self._cached_config_from_metadata
     ret = {
         'dut_id': data.convert_to_base_types(self.dut_id),
-        'dut_extended_id': data.convert_to_base_types (self.dut_extended_id),
+        #'dut_extended_id': data.convert_to_base_types (self.dut_extended_id),
         'start_time_millis': self.start_time_millis,
         'end_time_millis': self.end_time_millis,
         'outcome': data.convert_to_base_types(self.outcome),
