@@ -34,6 +34,7 @@ from openhtf.core import phase_group
 from openhtf.core import phase_nodes
 from openhtf.core import test_record
 from openhtf.core import test_state
+from openhtf.plugs import PlugManager
 from openhtf.util import configuration
 from openhtf.util import threads
 
@@ -96,10 +97,11 @@ class TestExecutor(threads.KillableThread):
                execution_uid: Text,
                test_start: Optional[phase_descriptor.PhaseDescriptor],
                test_options: 'test_descriptor.TestOptions',
-               run_with_profiling: bool):
+               run_with_profiling: bool, plug_manager: Optional[PlugManager] = None):
     super(TestExecutor, self).__init__(
         name='TestExecutorThread', run_with_profiling=run_with_profiling)
     self.test_state = None  # type: Optional[test_state.TestState]
+    self._plug_manager = plug_manager
 
     self._test_descriptor = test_descriptor
     self._test_start = test_start
@@ -201,7 +203,9 @@ class TestExecutor(threads.KillableThread):
     try:
       # Top level steps required to run a single iteration of the Test.
       self.test_state = test_state.TestState(self._test_descriptor, self.uid,
-                                             self._test_options)
+                                             self._test_options,
+                                             plug_manager=self._plug_manager
+                                             )
       phase_exec = phase_executor.PhaseExecutor(self.test_state)
 
       # Any access to self._exit_stacks must be done while holding this lock.
