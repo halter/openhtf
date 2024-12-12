@@ -273,6 +273,7 @@ class StationPubSub(pub_sub.PubSub):
   subscribers = set()  # Required by pub_sub.PubSub.
   _last_execution_uid = None
   _last_message = None
+  _seen_test_uids = []
 
   @classmethod
   def publish_test_record(cls, test_record):
@@ -294,7 +295,12 @@ class StationPubSub(pub_sub.PubSub):
         'type': message_type,
     }
     super(StationPubSub, cls).publish(message)
-    cls._last_execution_uid = test_state_dict['execution_uid']
+    # Only change the test UID if we've never seen it before. Prevents race condition of an update of a previous test
+    # overwriting the UID of the new test.
+    test_uid = test_state_dict['execution_uid']
+    if test_uid not in cls._seen_test_uids:
+        cls._seen_test_uids.append(test_uid)
+        cls._last_execution_uid = test_uid
     cls._last_message = message
 
   def on_subscribe(self, info):
