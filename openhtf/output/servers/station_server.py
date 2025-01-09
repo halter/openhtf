@@ -257,6 +257,7 @@ class DashboardPubSub(sockjs.tornado.SockJSConnection):
     return {
         host_port: {
             'station_id': CONF.station_id,  # From openhtf.core.test_state.
+            'test_description': CONF.test_description,
             'host': host,
             'port': cls.port,
             'status': 'ONLINE',

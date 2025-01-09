@@ -69,6 +69,12 @@ CONF.declare(
     'The name of this test station',
     default_value=socket.gethostname())
 
+CONF.declare(
+    'test_description',
+    description='Description of the test',
+    default_value='',
+)
+
 
 class _Infer(enum.Enum):
   INFER = 0
