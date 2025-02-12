@@ -154,7 +154,8 @@ class TestState(util.SubscribableStateMixin):
     self.state_logger = logs.get_record_logger_for(execution_uid)
     if plug_manager is not None:
         self.plug_manager = plug_manager
-        self.plug_manager.initialize_plugs(test_desc.plug_types)
+        for plug in test_desc.plug_types:
+            self.plug_manager.add_plug_type(plug)
     else:
         self.plug_manager = plugs.PlugManager(test_desc.plug_types,
                                           self.state_logger)

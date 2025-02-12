@@ -217,6 +217,14 @@ class PlugManager(object):
           base_class not in ignored_classes)
     ]
 
+  def add_plug_type(self, plug_type: Type[base_plugs.BasePlug]):
+    if isinstance(plug_type, base_plugs.PlugPlaceholder):
+      raise base_plugs.InvalidPlugError(
+        'Plug {} is a placeholder, replace it using with_plugs().'.format(
+          plug_type))
+
+    self._plug_types.add(plug_type)
+
   def add_non_managed_plug(self, plug):
     t = type(plug)
     if t in self._unmanaged_plugs:
