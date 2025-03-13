@@ -21,6 +21,7 @@ is-ready check.
 """
 
 import logging
+import threading
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Text, Tuple, Type, TypeVar, Union
 
 import attr
@@ -265,37 +266,39 @@ class PlugManager(object):
       plug_logger = self.logger.getChild(plug_type.__name__)
       if plug_type in self._plugs_by_type:
         continue
-      try:
-        if not issubclass(plug_type, base_plugs.BasePlug):
-          raise base_plugs.InvalidPlugError(
-            'Plug type "{}" is not an instance of base_plugs.BasePlug'.format(
-              plug_type))
-        if plug_type.logger != _BASE_PLUGS_LOG:
-          # They put a logger attribute on the class itself, overriding ours.
-          raise base_plugs.InvalidPlugError(
-            'Do not override "logger" in your plugs.', plug_type)
-
-        # Override the logger so that __init__'s logging goes into the record.
-        plug_type.logger = plug_logger
+      # The following method of swapping out loggers is not thread-safe, so it is wrapped in a lock.
+      with plug_type.init_lock:
         try:
-          plug_instance = plug_type()
-        finally:
-          # Now set it back since we'll give the instance a logger in a moment.
-          plug_type.logger = _BASE_PLUGS_LOG
-        # Set the logger attribute directly (rather than in base_plugs.BasePlug)
-        # so we don't depend on subclasses' implementation of __init__ to have
-        # it set.
-        if plug_instance.logger != _BASE_PLUGS_LOG:
-          raise base_plugs.InvalidPlugError(
-            'Do not set "self.logger" in __init__ in your plugs', plug_type)
-        else:
-          # Now the instance has its own copy of the test logger.
-          plug_instance.logger = plug_logger
-      except Exception:  # pylint: disable=broad-except
-        plug_logger.exception('Exception instantiating plug type %s', plug_type)
-        self.tear_down_plugs()
-        raise
-      self.update_plug(plug_type, plug_instance)
+          if not issubclass(plug_type, base_plugs.BasePlug):
+            raise base_plugs.InvalidPlugError(
+              'Plug type "{}" is not an instance of base_plugs.BasePlug'.format(
+                plug_type))
+          if plug_type.logger != _BASE_PLUGS_LOG:
+            # They put a logger attribute on the class itself, overriding ours.
+            raise base_plugs.InvalidPlugError(
+              'Do not override "logger" in your plugs.', plug_type)
+
+          # Override the logger so that __init__'s logging goes into the record.
+          plug_type.logger = plug_logger
+          try:
+            plug_instance = plug_type()
+          finally:
+            # Now set it back since we'll give the instance a logger in a moment.
+            plug_type.logger = _BASE_PLUGS_LOG
+          # Set the logger attribute directly (rather than in base_plugs.BasePlug)
+          # so we don't depend on subclasses' implementation of __init__ to have
+          # it set.
+          if plug_instance.logger != _BASE_PLUGS_LOG:
+            raise base_plugs.InvalidPlugError(
+              'Do not set "self.logger" in __init__ in your plugs', plug_type)
+          else:
+            # Now the instance has its own copy of the test logger.
+            plug_instance.logger = plug_logger
+        except Exception:  # pylint: disable=broad-except
+          plug_logger.exception('Exception instantiating plug type %s', plug_type)
+          self.tear_down_plugs()
+          raise
+        self.update_plug(plug_type, plug_instance)
 
   def get_plug_by_class_path(self,
                              plug_name: Text) -> Optional[base_plugs.BasePlug]:
