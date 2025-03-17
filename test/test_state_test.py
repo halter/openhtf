@@ -96,6 +96,7 @@ TEST_STATE_BASE_TYPE_INITIAL = {
         'diagnosers': [],
         'diagnoses': [],
         'log_records': [],
+        'test_uid': 'testing-123',
     },
     'plugs': {
         'plug_descriptors': {},

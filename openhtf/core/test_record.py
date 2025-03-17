@@ -186,6 +186,7 @@ class TestRecord(object):
   diagnoses = attr.ib(type=List['diagnoses_lib.Diagnosis'], factory=list)
   log_records = attr.ib(type=List[logs.LogRecord], factory=list)
   marginal = attr.ib(type=Optional[bool], default=None)
+  test_uid = attr.ib(type=Optional[Text], default=None)
 
   # Cache fields to reduce repeated base type conversions.
   _cached_record = attr.ib(type=Dict[Text, Any], factory=dict)
@@ -266,6 +267,7 @@ class TestRecord(object):
         'diagnosers': self._cached_diagnosers,
         'diagnoses': self._cached_diagnoses,
         'log_records': self._cached_log_records,
+        'test_uid': self.test_uid,
     }
     ret.update(self._cached_record)
     return ret
