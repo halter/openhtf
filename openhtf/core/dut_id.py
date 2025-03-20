@@ -1,3 +1,4 @@
+import dataclasses
 from typing import Optional
 from dataclasses import dataclass, field
 
@@ -15,10 +16,4 @@ class DutIdentifier:
         return self.halter_serial_number
 
     def _asdict(self) -> dict:
-        return {
-            "halter_serial_number": self.halter_serial_number,
-            "manufacturer_serial_number": self.manufacturer_serial_number,
-            "mac_address": self.mac_address,
-            "part_number": self.part_number,
-            "additional": self.additional
-        }
+        return dataclasses.asdict(self)
