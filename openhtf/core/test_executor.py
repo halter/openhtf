@@ -20,6 +20,7 @@ import pstats
 import sys
 import tempfile
 import threading
+import time
 import traceback
 from typing import Iterator, List, Optional, Text, Type, TYPE_CHECKING
 
@@ -27,13 +28,16 @@ from openhtf import util
 from openhtf.core import base_plugs
 from openhtf.core import diagnoses_lib
 from openhtf.core import phase_branches
+from openhtf.core import phase_child_runner
 from openhtf.core import phase_collections
 from openhtf.core import phase_descriptor
 from openhtf.core import phase_executor
 from openhtf.core import phase_group
 from openhtf.core import phase_nodes
+from openhtf.core import test_descriptor
 from openhtf.core import test_record
 from openhtf.core import test_state
+from openhtf.core.results_collector import ResultsCollector
 from openhtf.plugs import PlugManager
 from openhtf.util import configuration
 from openhtf.util import threads
@@ -383,11 +387,48 @@ class TestExecutor(threads.KillableThread):
       self.phase_executor.skip_checkpoint(checkpoint, subtest_rec)
       return _ExecutorReturn.CONTINUE
 
-    outcome = self.phase_executor.evaluate_checkpoint(checkpoint, subtest_rec)
+  def _execute_children(self, child_runner: phase_child_runner.ChildRunnerPhase,
+                          subtest_rec: Optional[test_record.SubtestRecord],
+                          in_teardown: bool) -> _ExecutorReturn:
+
+    tests = self._test_options.child_tests  # type: list[test_descriptor.Test]
+    if len(tests) == 0:
+      self.logger.warning("There are no child tests to execute.")
+      return _ExecutorReturn.CONTINUE
+
+    results = ResultsCollector()
+
+    def test_runner(child_test: test_descriptor.Test):
+      res = child_test.execute()
+      self.logger.debug(f"test uid {child_test.uid} finished, with result: {res}")
+
+    execution_threads = []
+    for test in tests:
+      test.add_output_callbacks(results.on_test_completed)
+      thread = threading.Thread(target=test_runner, args=(test,))
+      execution_threads.append(thread)
+      thread.start()
+
+    self.logger.debug('Waiting for all tests to complete.')
+    while any([not t.state.is_finalized if t.state is not None else False for t in tests]):
+      time.sleep(0.1)
+
+    for thread in execution_threads:
+      thread.join()
+
+    self.logger.debug('All child tests complete.')
+
+    outcome = phase_executor.PhaseExecutionOutcome(phase_descriptor.PhaseResult.CONTINUE)
+
+    if any(res.outcome != test_record.Outcome.PASS for res in results.get_results()):
+      if self._test_options.stop_on_first_failure:
+        outcome = phase_executor.PhaseExecutionOutcome(
+          phase_descriptor.PhaseResult.STOP)
+
     if outcome.is_terminal:
       if not self._last_outcome:
         self._last_outcome = outcome
-        self._last_execution_unit = checkpoint.name
+        self._last_execution_unit = child_runner.name
       return _ExecutorReturn.TERMINAL
 
     if outcome.is_fail_subtest:
@@ -616,6 +657,8 @@ class TestExecutor(threads.KillableThread):
       return self._execute_phase(node, subtest_rec, in_teardown)
     if isinstance(node, phase_branches.Checkpoint):
       return self._execute_checkpoint(node, subtest_rec, in_teardown)
+    if isinstance(node, phase_child_runner.ChildRunnerPhase):
+      return self._execute_children(node, subtest_rec, in_teardown)
     self.logger.error('Unhandled node type: %s', node)
     return _ExecutorReturn.TERMINAL
 

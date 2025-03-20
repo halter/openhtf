@@ -92,6 +92,9 @@ def _get_executing_test():
   if not tests:
     return None, None
 
+  # Filter out child tests
+  tests = [test for test in tests if not test.is_child_test]
+
   if len(tests) > 1:
     _LOG.warning('Station server does not support multiple executing tests.')
 

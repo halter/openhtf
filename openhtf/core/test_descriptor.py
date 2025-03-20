@@ -142,6 +142,8 @@ class Test(object):
 
   def __init__(self, *nodes: phase_descriptor.PhaseCallableOrNodeT,
                plug_manager: Optional[PlugManager] = None,
+               child_tests: Optional[List["Test"]] = None,
+               is_child_test: bool = False,
                **metadata: Any):
     # Some sanity checks on special metadata keys we automatically fill in.
     if 'config' in metadata:
@@ -151,6 +153,8 @@ class Test(object):
     self.created_time_millis = util.time_millis()
     self.last_run_time_millis = None
     self._test_options = TestOptions()
+    self._test_options.child_tests = child_tests or []
+    self._test_options.is_child_test = is_child_test
     self._lock = threading.Lock()
     self._executor = None
     self._plug_manager = plug_manager
@@ -225,6 +229,10 @@ class Test(object):
       if self._executor:
         return self._executor.test_state
       return None
+
+  @property
+  def is_child_test(self) -> bool:
+      return self._test_options.is_child_test
 
   def get_option(self, option: Text) -> Any:
     return getattr(self._test_options, option)
@@ -404,7 +412,6 @@ class Test(object):
 
     return final_state.test_record.outcome == htf_test_record.Outcome.PASS
 
-
 @attr.s(slots=True)
 class TestOptions(object):
   """Class encapsulating various tunable knobs for Tests and their defaults.
@@ -430,6 +437,8 @@ class TestOptions(object):
   default_dut_id = attr.ib(type=Text, default='UNKNOWN_DUT')
   stop_on_first_failure = attr.ib(type=bool, default=False)
   diagnosers = attr.ib(type=List[diagnoses_lib.BaseTestDiagnoser], factory=list)
+  is_child_test = attr.ib(type=bool, default=False)
+  child_tests = attr.ib(type=List[Test], factory=list)
 
 
 @attr.s(slots=True)
