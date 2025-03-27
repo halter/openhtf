@@ -271,13 +271,13 @@ class PlugManager(object):
           raise base_plugs.InvalidPlugError(
             'Plug type "{}" is not an instance of base_plugs.BasePlug'.format(
               plug_type))
-        if plug_type.logger != _BASE_PLUGS_LOG:
-          # They put a logger attribute on the class itself, overriding ours.
-          raise base_plugs.InvalidPlugError(
-            'Do not override "logger" in your plugs.', plug_type)
 
         # The following method of swapping out loggers is not thread-safe, so it is wrapped in a lock.
         with plug_type.init_lock:
+          if plug_type.logger != _BASE_PLUGS_LOG:
+            # They put a logger attribute on the class itself, overriding ours.
+            raise base_plugs.InvalidPlugError(
+              'Do not override "logger" in your plugs.', plug_type)
           # Override the logger so that __init__'s logging goes into the record.
           plug_type.logger = plug_logger
           try:
