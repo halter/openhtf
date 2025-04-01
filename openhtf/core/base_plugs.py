@@ -169,6 +169,9 @@ class BasePlug(object):
     """
     return {}
 
+  def setUp(self) -> None:
+    """This method is called automatically at the start of each Test execution."""
+
   def tearDown(self) -> None:
     """This method is called automatically at the end of each Test execution."""
 
