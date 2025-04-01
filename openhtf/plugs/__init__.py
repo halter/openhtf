@@ -301,7 +301,12 @@ class PlugManager(object):
           self.tear_down_plugs()
           raise
       self.update_plug(plug_type, plug_instance)
-      plug_instance.setUp()
+      try:
+        plug_instance.setUp()
+      except Exception:  # pylint: disable=broad-except
+        plug_logger.exception('Exception setting up plug type %s', plug_type)
+        self.tear_down_plugs()
+        raise
 
   def get_plug_by_class_path(self,
                              plug_name: Text) -> Optional[base_plugs.BasePlug]:
