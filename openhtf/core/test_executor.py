@@ -426,8 +426,6 @@ class TestExecutor(threads.KillableThread):
       thread.start()
 
     self.logger.debug('Waiting for all tests to complete.')
-    while any([not t.state.is_finalized if t.state is not None else False for t in tests]):
-      time.sleep(0.1)
 
     for thread in execution_threads:
       thread.join()
