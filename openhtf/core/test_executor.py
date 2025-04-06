@@ -387,6 +387,22 @@ class TestExecutor(threads.KillableThread):
       self.phase_executor.skip_checkpoint(checkpoint, subtest_rec)
       return _ExecutorReturn.CONTINUE
 
+    outcome = self.phase_executor.evaluate_checkpoint(checkpoint, subtest_rec)
+
+    if outcome.is_terminal:
+      if not self._last_outcome:
+        self._last_outcome = outcome
+        self._last_execution_unit = checkpoint.name
+      return _ExecutorReturn.TERMINAL
+
+    if outcome.is_fail_subtest:
+      if not subtest_rec:
+        raise TestExecutionError(
+            'INVALID STATE: Phase returned outcome FAIL_SUBTEST when not '
+            'in subtest.')
+      subtest_rec.outcome = test_record.SubtestOutcome.FAIL
+    return _ExecutorReturn.CONTINUE
+
   def _execute_children(self, child_runner: phase_child_runner.ChildRunnerPhase,
                           subtest_rec: Optional[test_record.SubtestRecord],
                           in_teardown: bool) -> _ExecutorReturn:
