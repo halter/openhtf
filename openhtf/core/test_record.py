@@ -170,6 +170,7 @@ class TestRecord(object):
 
   dut_id = attr.ib(type=Optional[Text])
   station_id = attr.ib(type=Text)
+  test_uid = attr.ib(type=Text)
   dut_extended_id = attr.ib(type=Optional[DutIdentifier], default=None)
   start_time_millis = attr.ib(type=int, default=0)
   end_time_millis = attr.ib(type=Optional[int], default=None)
@@ -186,7 +187,6 @@ class TestRecord(object):
   diagnoses = attr.ib(type=List['diagnoses_lib.Diagnosis'], factory=list)
   log_records = attr.ib(type=List[logs.LogRecord], factory=list)
   marginal = attr.ib(type=Optional[bool], default=None)
-  test_uid = attr.ib(type=Optional[Text], default=None)
 
   # Cache fields to reduce repeated base type conversions.
   _cached_record = attr.ib(type=Dict[Text, Any], factory=dict)
