@@ -440,6 +440,36 @@ class RegexMatcher(ValidatorBase):
 def matches_regex(regex):
   return RegexMatcher(regex, re.compile(regex))
 
+class MultiRegexMatcher(ValidatorBase):
+    def __init__(self, regex_list: list[str], compiled_list: list[re.Pattern]) -> None:
+        self.regex_list = regex_list
+        self._compiled_list = compiled_list
+
+    def __call__(self, value: str) -> bool:
+        str_value = str(value)
+        for compiled_pattern in self._compiled_list:
+            if compiled_pattern.match(str_value) is not None:
+                return True
+        return False
+
+    def __deepcopy__(self, dummy_memo):
+        return type(self)(self.regex_list[:], self._compiled_list[:])
+
+    def __str__(self):
+        patterns_str = " | ".join(self.regex_list)
+        return "'x' matches any of: /%s/" % patterns_str
+
+    def __eq__(self, other):
+        return isinstance(other, type(self)) and self.regex_list == other.regex_list
+
+    def __ne__(self, other) -> bool:
+        return not self == other
+
+@register
+def matches_any_regex(regex_list: list[str]):
+    compiled_list = [re.compile(regex) for regex in regex_list]
+    return MultiRegexMatcher(regex_list, compiled_list)
+
 
 class WithinPercent(RangeValidatorBase):
   """Validates that a number is within percent of a value."""
