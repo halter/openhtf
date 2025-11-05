@@ -440,7 +440,7 @@ class RegexMatcher(ValidatorBase):
 def matches_regex(regex):
   return RegexMatcher(regex, re.compile(regex))
 
-class MultiRegexMatcher(ValidatorBase):
+
 class MultiRegexMatcher(ValidatorBase):
     def __init__(self, regex_list: list[str], compiled_list: list[re.Pattern]) -> None:
         self.regex_list = regex_list
