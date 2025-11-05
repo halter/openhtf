@@ -441,6 +441,7 @@ def matches_regex(regex):
   return RegexMatcher(regex, re.compile(regex))
 
 class MultiRegexMatcher(ValidatorBase):
+class MultiRegexMatcher(ValidatorBase):
     def __init__(self, regex_list: list[str], compiled_list: list[re.Pattern]) -> None:
         self.regex_list = regex_list
         self._compiled_list = compiled_list
@@ -466,10 +467,23 @@ class MultiRegexMatcher(ValidatorBase):
         return not self == other
 
 @register
-def matches_any_regex(regex_list: list[str]):
-    compiled_list = [re.compile(regex) for regex in regex_list]
-    return MultiRegexMatcher(regex_list, compiled_list)
+def matches_any_regex(*regex_lists: list[list[str]]):
+    """
+    Creates a validator that checks if a value matches ANY of the provided regex patterns.
 
+    Accepts one or more lists of regex strings.
+    Example: matches_any_regex(['a.*'], ['b.*', 'c.*'])
+    """
+    # 1. Amalgamate all lists into a single flat list of regex strings
+    flat_regex_list = []
+    for regex_list in regex_lists:
+        flat_regex_list.extend(regex_list)
+    
+    # 2. Compile the flat list of regex strings
+    compiled_list = [re.compile(regex) for regex in flat_regex_list]
+    
+    # 3. Pass both the original flat list and the compiled list to the matcher
+    return MultiRegexMatcher(flat_regex_list, compiled_list)
 
 class WithinPercent(RangeValidatorBase):
   """Validates that a number is within percent of a value."""
