@@ -466,19 +466,14 @@ class MultiRegexMatcher(ValidatorBase):
         return not self == other
 
 @register
-def matches_any_regex(*regex_lists: tuple[list[str]]):
-    """
-    Creates a validator that checks if a value matches ANY of the provided regex patterns.
-    """
-
+def matches_any_regex(*regex_collections: list[str]):
     flat_regex_list = []
-    for regex_list in regex_lists:
-        if not isinstance(regex_list, list) or not regex_list:
+    for collection in regex_collections:
+        if not isinstance(collection, list) or not collection:
             raise ValueError("Each argument must be a list of regex patterns.")
-        flat_regex_list.extend(regex_list)
-    
+        flat_regex_list.extend(collection)
+
     compiled_list = [re.compile(regex) for regex in flat_regex_list]
-    
     return MultiRegexMatcher(flat_regex_list, compiled_list)
 
 class WithinPercent(RangeValidatorBase):
