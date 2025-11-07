@@ -431,7 +431,3 @@ class ConsistentEndDimensionPivotTest(htf_test.TestCase):
 
     phase_record = yield phase
     self.assertMeasurementFail(phase_record, 'pivot')
-
-if __name__ == '__main__':
-  from unittest import main
-  main()
