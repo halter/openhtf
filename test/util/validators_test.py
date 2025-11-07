@@ -78,6 +78,42 @@ class TestInRange(unittest.TestCase):
     self.assertEqual(test_validator.maximum, 0x12)
 
 
+class TestSingleRegex(unittest.TestCase):
+  def test_single_regex(self):
+    pattern = r'^[A-Z]{3}\d{3}$'
+    validator = validators.matches_regex(pattern)
+    self.assertTrue(validator('ABC123'))
+    self.assertFalse(validator('abc123'))
+    self.assertFalse(validator('AB1234'))
+    self.assertFalse(validator('ABCD12'))
+
+
+class TestMultipleRegex(unittest.TestCase):
+  patterns_1 = [r'^[A-Z]{1}\d{1}$', r'^[A-Z]{2}\d{2}$', r'^[A-Z]{3}\d{3}$']
+  patterns_2 = [r'^\d{1}[A-Z]{1}$']
+  def test_multiple_regex_lists(self):
+
+    validator_1 = validators.matches_any_regex(TestMultipleRegex.patterns_1, TestMultipleRegex.patterns_2)
+    self.assertTrue(validator_1('ABC123'))
+    self.assertTrue(validator_1('A1'))
+    self.assertTrue(validator_1('1A'))
+    self.assertFalse(validator_1('123-ABCD'))
+  
+  def test_single_regex_list(self):
+    validator_2 = validators.matches_any_regex(TestMultipleRegex.patterns_2)
+    self.assertTrue(validator_2('1A'))
+    self.assertFalse(validator_2('A1'))
+
+  def test_invalid_arguments(self):
+    with self.assertRaisesRegex(ValueError, "Each argument must be a list of regex patterns."):
+      validators.matches_any_regex(r'^[A-Z]{3}\d{3}$')
+
+    with self.assertRaisesRegex(ValueError, "Each argument must be a list of regex patterns."):
+      validators.matches_any_regex([])
+
+    with self.assertRaisesRegex(ValueError, "Each argument must be a list of regex patterns."):
+      validators.matches_any_regex(r'd{3}', r'd{4}')
+
 class TestAllInRange(unittest.TestCase):
 
   def setUp(self):
@@ -395,3 +431,7 @@ class ConsistentEndDimensionPivotTest(htf_test.TestCase):
 
     phase_record = yield phase
     self.assertMeasurementFail(phase_record, 'pivot')
+
+if __name__ == '__main__':
+  from unittest import main
+  main()
