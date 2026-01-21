@@ -43,6 +43,7 @@ interface StationApiResponse {
   test_uid?: string;     // Present on messages of type 'update'.
   state?: RawTestState;  // Present on messages of type 'update'.
   type: 'update'|'record';
+  child_tests?: Array<{test_uid: string; state: RawTestState}>;  // Child tests
 }
 
 /**
@@ -56,6 +57,7 @@ export class StationService extends Subscription {
       {[testId: string]: Promise<Phase[]>} = {};
   private readonly testsById: {[testId: string]: TestState} = {};
   private readonly testsByStation: {[stationHostPort: string]: TestState} = {};
+  private readonly childTestsByParent: {[parentId: string]: TestState[]} = {};
   private messagesSubscription = null;
 
   constructor(
@@ -77,8 +79,27 @@ export class StationService extends Subscription {
             .mergeMap((message: SockJsMessage) => {
               const response = StationService.validateResponse(message.data);
               console.debug('StationService received response:', response);
-              const test = this.parseResponse(response, station);
-              return this.applyPhaseDescriptors(test);
+              const parentTest = this.parseResponse(response, station);
+
+              // Parse child tests
+              const childTests = (response.child_tests || []).map(child =>
+                  this.parseChildResponse(child, station, parentTest.testId)
+              );
+
+              // Store children
+              this.childTestsByParent[parentTest.testId] = childTests;
+              childTests.forEach(child => this.testsById[child.testId] = child);
+
+              // Request phase descriptors for child tests immediately (before they finish)
+              // This is fire-and-forget since child test phases are accessed separately
+              childTests.forEach(child => {
+                this.applyPhaseDescriptors(child).subscribe(
+                    updatedChild => this.testsById[updatedChild.testId] = updatedChild,
+                    error => console.debug('Failed to get phase descriptors for child test:', child.testId, error)
+                );
+              });
+
+              return this.applyPhaseDescriptors(parentTest);
             })
             .subscribe(test => {
               this.applyResponse(test, station);
@@ -91,6 +112,10 @@ export class StationService extends Subscription {
 
   getTest(station: Station) {
     return this.testsByStation[station.hostPort] || null;
+  }
+
+  getChildTests(parentTestId: string): TestState[] {
+    return this.childTestsByParent[parentTestId] || [];
   }
 
   restart(station: Station) {
@@ -131,6 +156,16 @@ export class StationService extends Subscription {
       this.historyService.prependItemFromTestState(station, testState);
     }
     return testState;
+  }
+
+  /**
+   * Step 2b: Transform a child test response object into a test state object.
+   */
+  private parseChildResponse(
+      child: {test_uid: string; state: RawTestState},
+      station: Station,
+      parentTestId: string) {
+    return makeTest(child.state, child.test_uid, null, station);
   }
 
   /**
