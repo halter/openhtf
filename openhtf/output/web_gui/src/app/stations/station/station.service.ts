@@ -78,7 +78,6 @@ export class StationService extends Subscription {
             // Use mergeMap since this.applyPhaseDescriptors returns Observable.
             .mergeMap((message: SockJsMessage) => {
               const response = StationService.validateResponse(message.data);
-              console.debug('StationService received response:', response);
               const parentTest = this.parseResponse(response, station);
 
               // Parse child tests
@@ -86,18 +85,21 @@ export class StationService extends Subscription {
                   this.parseChildResponse(child, station, parentTest.testId)
               );
 
-              // Store children
-              this.childTestsByParent[parentTest.testId] = childTests;
-              childTests.forEach(child => this.testsById[child.testId] = child);
+              // Store children - but don't overwrite with empty array if we already have children
+              // This prevents 'record' messages (which have empty child_tests) from clearing
+              // the child tests that were stored from previous 'update' messages.
+              if (childTests.length > 0 || !(parentTest.testId in this.childTestsByParent)) {
+                this.childTestsByParent[parentTest.testId] = childTests;
+                childTests.forEach(child => this.testsById[child.testId] = child);
 
-              // Request phase descriptors for child tests immediately (before they finish)
-              // This is fire-and-forget since child test phases are accessed separately
-              childTests.forEach(child => {
-                this.applyPhaseDescriptors(child).subscribe(
-                    updatedChild => this.testsById[updatedChild.testId] = updatedChild,
-                    error => console.debug('Failed to get phase descriptors for child test:', child.testId, error)
-                );
-              });
+                // Request phase descriptors for child tests immediately (before they finish)
+                // This is fire-and-forget since child test phases are accessed separately
+                childTests.forEach(child => {
+                  this.applyPhaseDescriptors(child).subscribe(
+                      updatedChild => this.testsById[updatedChild.testId] = updatedChild
+                  );
+                });
+              }
 
               return this.applyPhaseDescriptors(parentTest);
             })
@@ -164,7 +166,7 @@ export class StationService extends Subscription {
   private parseChildResponse(
       child: {test_uid: string; state: RawTestState},
       station: Station,
-      parentTestId: string) {
+      _parentTestId: string) {
     return makeTest(child.state, child.test_uid, null, station);
   }
 

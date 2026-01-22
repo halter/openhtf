@@ -193,7 +193,6 @@ def _cache_phase_descriptors(test_uid, test):
           for phase in test.descriptor.phase_sequence.all_phases()
       ]
       _PHASE_DESCRIPTOR_CACHE[test_uid] = phase_descriptors
-      _LOG.debug('Cached phase descriptors for test %s', test_uid)
     except Exception as e:
       _LOG.warning('Failed to cache phase descriptors for %s: %s', test_uid, e)
 
@@ -331,11 +330,18 @@ class StationWatcher(threading.Thread):
     # Wait for any event (parent, children, or plugs)
     events = [parent_event] + child_events + plug_events
 
+    # Track how many children we know about
+    known_child_count = len(children)
+
     # Wait for the test state or a plug state to change, or for the previously
-    # executing test to finish.
+    # executing test to finish, or for new child tests to appear.
     while not _wait_for_any_event(events, _CHECK_FOR_FINISHED_TEST_POLL_S):
-      new_parent, _, _ = _get_parent_and_children()
+      new_parent, _, new_children = _get_parent_and_children()
       if parent != new_parent:
+        break
+      # Also break if new child tests have appeared - we need to subscribe
+      # to their events and include them in updates
+      if len(new_children) != known_child_count:
         break
 
   @classmethod
@@ -397,6 +403,10 @@ class StationPubSub(pub_sub.PubSub):
   _lock = threading.Lock()  # Required by pub_sub.PubSub.
   subscribers = set()  # Required by pub_sub.PubSub.
   _last_message = None
+  # Track last 'update' message separately - used for new subscribers.
+  # This prevents 'record' messages (which have empty child_tests) from
+  # overwriting the current state that new clients should see.
+  _last_update_message = None
 
   @classmethod
   def publish_test_record(cls, test_record):
@@ -432,8 +442,18 @@ class StationPubSub(pub_sub.PubSub):
             for child_dict in child_state_dicts
         ],
     }
-    super(StationPubSub, cls).publish(message)
+    # IMPORTANT: Update _last_update_message BEFORE publish() to avoid race
+    # condition where a new subscriber connects after publish() but before
+    # the update, causing them to receive a stale message in on_subscribe().
     cls._last_message = message
+    if message_type == 'update':
+      cls._last_update_message = message
+    super(StationPubSub, cls).publish(message)
+
+  @classmethod
+  def clear_last_update(cls):
+    """Clear the last update message when tests complete."""
+    cls._last_update_message = None
 
   def on_subscribe(self, info):
     """Send the more recent test state to new subscribers when they connect.
@@ -445,8 +465,10 @@ class StationPubSub(pub_sub.PubSub):
     """
     test, _ = _get_executing_test()
 
-    if self._last_message is not None and test is not None:
-      self.send(self._last_message)
+    # Use _last_update_message for new subscribers - this preserves child_tests
+    # even if 'record' messages have been published for completed children.
+    if self._last_update_message is not None and test is not None:
+      self.send(self._last_update_message)
 
 
 class BaseTestHandler(web_gui_server.CorsRequestHandler):
