@@ -14,10 +14,12 @@
 
 """Unit tests for phase_executor module."""
 
+import sys
 import unittest
 
 import openhtf
 from openhtf.core import phase_descriptor
+from openhtf.core import phase_executor
 from openhtf.core import test_record
 from openhtf.util import test as htf_test
 
@@ -71,3 +73,59 @@ class PhaseExecuterRunIfTest(htf_test.TestCase):
                                  phase_excp_run_if)
     record = self.execute_phase_or_test(openhtf.Test(phase))
     self.assertTestError(record)
+
+
+class ExceptionInfoTest(unittest.TestCase):
+  """Tests for ExceptionInfo class."""
+
+  def test_as_base_types_regular_exception(self):
+    """ExceptionInfo does NOT include operator_popup for regular exceptions."""
+    try:
+      raise ValueError("Regular error")
+    except ValueError:
+      info = phase_executor.ExceptionInfo(*sys.exc_info())
+
+    result = info.as_base_types()
+    self.assertIn('exc_type', result)
+    self.assertIn('exc_val', result)
+    self.assertIn('exc_tb', result)
+    self.assertNotIn('operator_popup', result)
+
+  def test_as_base_types_with_frontend_friendly_error(self):
+    """ExceptionInfo includes operator_popup for FrontendFriendlyError."""
+    # Create a mock error with the required attributes
+    class MockFrontendFriendlyError(Exception):
+      def __init__(self):
+        self.title = {"en": "Test Error", "th": "ข้อผิดพลาด"}
+        self.description = {"en": "Check connection", "th": "ตรวจสอบการเชื่อมต่อ"}
+        self.image_url = "/img/help.png"
+        super().__init__(self.title.get("en", "Error"))
+
+    try:
+      raise MockFrontendFriendlyError()
+    except MockFrontendFriendlyError:
+      info = phase_executor.ExceptionInfo(*sys.exc_info())
+
+    result = info.as_base_types()
+    self.assertIn('operator_popup', result)
+    self.assertEqual(result['operator_popup']['title'], {"en": "Test Error", "th": "ข้อผิดพลาด"})
+    self.assertEqual(result['operator_popup']['description'], {"en": "Check connection", "th": "ตรวจสอบการเชื่อมต่อ"})
+    self.assertEqual(result['operator_popup']['image_url'], "/img/help.png")
+
+  def test_as_base_types_frontend_friendly_error_without_image(self):
+    """ExceptionInfo handles FrontendFriendlyError without image_url."""
+    class MockFrontendFriendlyErrorNoImage(Exception):
+      def __init__(self):
+        self.title = {"en": "Test"}
+        self.description = {"en": "Desc"}
+        # No image_url attribute
+        super().__init__("Test")
+
+    try:
+      raise MockFrontendFriendlyErrorNoImage()
+    except MockFrontendFriendlyErrorNoImage:
+      info = phase_executor.ExceptionInfo(*sys.exc_info())
+
+    result = info.as_base_types()
+    self.assertIn('operator_popup', result)
+    self.assertIsNone(result['operator_popup']['image_url'])

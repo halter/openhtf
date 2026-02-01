@@ -92,6 +92,24 @@ export interface RawLogRecord {
 
 export interface RawMetadata { test_name: string; }
 
+export interface RawOperatorPopup {
+  title: {[lang: string]: string};
+  description: {[lang: string]: string};
+  image_url?: string | null;
+}
+
+export interface RawExceptionInfo {
+  exc_type?: string;
+  exc_val?: string;
+  exc_tb?: string;
+  operator_popup?: RawOperatorPopup;
+}
+
+export interface RawPhaseResult {
+  // phase_result contains ExceptionInfo when an exception was raised
+  phase_result?: RawExceptionInfo | string;
+}
+
 export interface RawPhase {
   attachments: {[name: string]: RawAttachment};
   codeinfo: {};
@@ -99,7 +117,7 @@ export interface RawPhase {
   end_time_millis?: number;
   measurements: {[name: string]: RawMeasurement};
   name: string;
-  result?: {};  // Not present on running phase state.
+  result?: RawPhaseResult;  // Not present on running phase state.
   start_time_millis: number;
   outcome: string;
 }
@@ -162,6 +180,10 @@ export function makeTest(
     status = testStateStatusMap[rawState.status];
   }
 
+  // Extract operator popup from any phase that raised a FrontendFriendlyError.
+  // We look at all phases and take the last one with an operator_popup.
+  const operatorPopup = extractOperatorPopup(rawState);
+
   return new TestState({
     attachments,
     dutId: rawState.test_record.dut_id,
@@ -169,6 +191,7 @@ export function makeTest(
     fileName,
     logs,
     name: rawState.test_record.metadata.test_name,
+    operatorPopup,
     phases,
     plugDescriptors: rawState.plugs.plug_descriptors,
     plugStates: rawState.plugs.plug_states,
@@ -177,6 +200,41 @@ export function makeTest(
     status,
     testId,
   });
+}
+
+/**
+ * Extract operator popup from any phase result that contains one.
+ * Returns the last found operator_popup, or null if none.
+ *
+ * The structure is: phase.result.phase_result.operator_popup
+ * where phase_result is the ExceptionInfo containing the popup data.
+ */
+function extractOperatorPopup(rawState: RawTestState): RawOperatorPopup | null {
+  let popup: RawOperatorPopup | null = null;
+
+  // DEBUG: Log raw phases to see structure
+  console.log('[DEBUG extractOperatorPopup] Checking phases:', rawState.test_record.phases.length);
+
+  // Check all completed phases
+  for (const phase of rawState.test_record.phases) {
+    console.log('[DEBUG extractOperatorPopup] Phase:', phase.name, 'result:', phase.result);
+    // phase.result is PhaseExecutionOutcome which has phase_result field
+    // phase_result is ExceptionInfo when an exception was raised
+    if (phase.result && phase.result.phase_result) {
+      const phaseResult = phase.result.phase_result;
+      console.log('[DEBUG extractOperatorPopup] phaseResult:', phaseResult);
+      if (typeof phaseResult === 'object') {
+        const exceptionInfo = phaseResult as RawExceptionInfo;
+        console.log('[DEBUG extractOperatorPopup] exceptionInfo.operator_popup:', exceptionInfo.operator_popup);
+        if (exceptionInfo.operator_popup) {
+          popup = exceptionInfo.operator_popup;
+        }
+      }
+    }
+  }
+
+  console.log('[DEBUG extractOperatorPopup] Final popup:', popup);
+  return popup;
 }
 
 function makePhase(phase: RawPhase, running: boolean) {

@@ -133,6 +133,10 @@ const mockHistoryService = {
   prependItemFromTestState: jasmine.createSpy('prependItemFromTestState'),
 };
 
+const mockOperatorPopupService = {
+  show: jasmine.createSpy('show'),
+};
+
 /**
  * Test cases.
  */
@@ -163,6 +167,8 @@ describe('station service', () => {
         mockConfig as any, mockFlashMessageService as any,
         // tslint:disable-next-line:no-any pass mock in place of real service
         mockHistoryService as any, mockHttpService as any,
+        // tslint:disable-next-line:no-any pass mock in place of real service
+        mockOperatorPopupService as any,
         // tslint:disable-next-line:no-any pass mock in place of real service
         mockSockJsService as any);
   });

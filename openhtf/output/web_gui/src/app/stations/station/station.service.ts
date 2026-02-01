@@ -30,6 +30,7 @@ import { Observable } from 'rxjs/Observable';
 import { ConfigService } from '../../core/config.service';
 import { FlashMessageService } from '../../core/flash-message.service';
 import { Phase } from '../../shared/models/phase.model';
+import { OperatorPopupService } from '../../shared/operator-popup/operator-popup.service';
 import { Station } from '../../shared/models/station.model';
 import { TestState, TestStatus } from '../../shared/models/test-state.model';
 import { SockJsMessage, SockJsService } from '../../shared/sock-js.service';
@@ -63,6 +64,7 @@ export class StationService extends Subscription {
   constructor(
       private config: ConfigService, private flashMessage: FlashMessageService,
       private historyService: HistoryService, private http: Http,
+      private operatorPopupService: OperatorPopupService,
       sockJsService: SockJsService) {
     super(sockJsService);
   }
@@ -263,10 +265,20 @@ export class StationService extends Subscription {
       const oldTest = this.testsById[test.testId];
       // Alert the operator when the test exits early.
       if (oldTest.status !== test.status) {
+        console.log('[DEBUG station.service] Status changed:', oldTest.status, '->', test.status);
+        console.log('[DEBUG station.service] test.operatorPopup:', test.operatorPopup);
         if (test.status === TestStatus.error) {
-          this.flashMessage.error(
-              'The test exited early due to an error. View the test logs for ' +
-              'details.');
+          // Check for operator popup from FrontendFriendlyError
+          if (test.operatorPopup) {
+            console.log('[DEBUG station.service] Showing operator popup');
+            this.operatorPopupService.show(test.operatorPopup);
+          } else {
+            console.log('[DEBUG station.service] No operator popup, showing flash message');
+            // Fallback to flash message for errors without operator popup
+            this.flashMessage.error(
+                'The test exited early due to an error. View the test logs for ' +
+                'details.');
+          }
         } else if (test.status === TestStatus.timeout) {
           this.flashMessage.warn('The test exited early due to timeout.');
         } else if (test.status === TestStatus.aborted) {

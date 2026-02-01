@@ -20,6 +20,7 @@
 
 import { Attachment } from './attachment.model';
 import { LogRecord } from './log-record.model';
+import { OperatorPopup } from '../operator-popup/operator-popup.model';
 import { Phase } from './phase.model';
 import { Station } from './station.model';
 
@@ -44,6 +45,8 @@ export class TestState {
   fileName: string|null;  // This is null for tests *not* from the history.
   name: string;
   logs: LogRecord[];
+  // Operator-facing popup from FrontendFriendlyError, if any phase raised one.
+  operatorPopup: OperatorPopup|null;
   phases: Phase[];
   plugDescriptors: {[name: string]: PlugDescriptor};
   plugStates: {[name: string]: {}};

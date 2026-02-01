@@ -35,6 +35,7 @@ STATIC_FILES = (
     r'css/.*\.css',
     r'css/.*\.css.map',
     r'img/.*',
+    r'images/.*',
     r'js/.*\.js',
     r'js/.*\.js\.map',
     r'service-worker\.js',

@@ -613,6 +613,54 @@ class PlugsHandler(BaseTestHandler):
       self.write(response)
 
 
+class ProjectStaticFileHandler(web_gui_server.CorsRequestHandler):
+  """Serves static files from the project root directory.
+
+  This allows FrontendFriendlyError to reference images relative to the
+  project root, e.g., image_url="/project/path/to/image.png".
+
+  The project root defaults to the current working directory when the
+  server starts, but can be configured via the 'project_root' parameter.
+  """
+
+  project_root = None
+
+  def initialize(self, project_root=None):
+    self.project_root = project_root or os.getcwd()
+
+  def get(self, path):
+    # Prevent directory traversal attacks
+    path = os.path.normpath(path)
+    if path.startswith('..') or os.path.isabs(path):
+      self.set_status(403)
+      self.write('Forbidden')
+      return
+
+    file_path = os.path.join(self.project_root, path)
+
+    if not os.path.isfile(file_path):
+      self.set_status(404)
+      self.write('File not found')
+      return
+
+    # Determine content type based on extension
+    ext = os.path.splitext(file_path)[1].lower()
+    content_types = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.svg': 'image/svg+xml',
+        '.webp': 'image/webp',
+        '.bmp': 'image/bmp',
+    }
+    content_type = content_types.get(ext, 'application/octet-stream')
+
+    self.set_header('Content-Type', content_type)
+    with open(file_path, 'rb') as f:
+      self.write(f.read())
+
+
 class BaseHistoryHandler(web_gui_server.CorsRequestHandler):
 
   history_path = None
@@ -913,6 +961,7 @@ class StationServer(web_gui_server.WebGuiServer):
         (r'/tests/(?P<test_uid>[\w\d:]+)/phases/(?P<phase_descriptor_id>\d+)/'
          'attachments/(?P<attachment_name>.+)', AttachmentsHandler),
         (r'/commands/(?P<command>.+)', CommandHandler),
+        (r'/project/(.*)', ProjectStaticFileHandler, {'project_root': None}),
     ))
 
     # Optionally enable history from disk.

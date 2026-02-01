@@ -1,0 +1,68 @@
+<!--
+ Copyright 2024 Halter
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<div class="operator-popup-overlay" *ngIf="popup" tabindex="-1" id="operator-popup-overlay">
+  <div class="operator-popup-modal">
+    <div class="operator-popup-header">
+      <h2 class="operator-popup-title">{{ title }}</h2>
+      <div class="lang-selector">
+        <button type="button" class="lang-dropdown-btn" (click)="toggleDropdown()">
+          <img [src]="currentFlag" class="flag-icon" alt="">
+          <span class="lang-name">{{ currentLanguageName }}</span>
+          <span class="dropdown-arrow">&#9662;</span>
+        </button>
+        <div class="lang-dropdown-menu" *ngIf="dropdownOpen">
+          <button
+            type="button"
+            *ngFor="let lang of languages"
+            class="lang-option"
+            [class.selected]="lang === currentLanguage"
+            (click)="selectLanguage(lang)">
+            <img [src]="getFlag(lang)" class="flag-icon" alt="">
+            <span>{{ getLanguageName(lang) }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="operator-popup-body">
+      <div class="image-container" *ngIf="imageUrl" (click)="openImageZoom()">
+        <img
+          [src]="imageUrl"
+          alt="Instruction image"
+          class="operator-popup-image">
+        <div class="zoom-hint">Click to enlarge</div>
+      </div>
+
+      <p class="operator-popup-description">{{ description }}</p>
+    </div>
+
+  <!-- Image zoom overlay -->
+  <div class="image-zoom-overlay" *ngIf="imageZoomed" (click)="closeImageZoom()">
+    <button type="button" class="zoom-close-btn" (click)="closeImageZoom()">&#10005;</button>
+    <img [src]="imageUrl" alt="Zoomed instruction image" class="zoomed-image">
+  </div>
+
+    <div class="operator-popup-footer">
+      <button
+        type="button"
+        class="acknowledge-btn"
+        (click)="acknowledge()">
+        OK
+      </button>
+    </div>
+  </div>
+</div>

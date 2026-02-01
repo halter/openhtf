@@ -23,6 +23,7 @@
 
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { ElapsedTimePipe } from './elapsed-time.pipe';
@@ -30,6 +31,8 @@ import { FocusDirective } from './focus.directive';
 import { GenealogyNodeComponent } from './genealogy-node.component';
 import { LogLevelToClassPipe } from './log-level-to-class.pipe';
 import { ObjectToSortedValuesPipe } from './object-to-sorted-values.pipe';
+import { OperatorPopupComponent } from './operator-popup/operator-popup.component';
+import { OperatorPopupService } from './operator-popup/operator-popup.service';
 import { ProgressBarComponent } from './progress-bar.component';
 import { SockJsService } from './sock-js.service';
 import { StatusToClassPipe, StatusToTextPipe } from './status-pipes';
@@ -41,6 +44,7 @@ import { TrimmedTextComponent } from './trimmed-text.component';
 @NgModule({
   imports: [
     CommonModule,
+    FormsModule,
     HttpModule,
   ],
   declarations: [
@@ -49,6 +53,7 @@ import { TrimmedTextComponent } from './trimmed-text.component';
     GenealogyNodeComponent,
     LogLevelToClassPipe,
     ObjectToSortedValuesPipe,
+    OperatorPopupComponent,
     ProgressBarComponent,
     StatusToClassPipe,
     StatusToTextPipe,
@@ -57,6 +62,7 @@ import { TrimmedTextComponent } from './trimmed-text.component';
     TooltipDirective,
   ],
   providers: [
+    OperatorPopupService,
     SockJsService,
     TimeService,
   ],
@@ -67,6 +73,7 @@ import { TrimmedTextComponent } from './trimmed-text.component';
     GenealogyNodeComponent,
     LogLevelToClassPipe,
     ObjectToSortedValuesPipe,
+    OperatorPopupComponent,
     ProgressBarComponent,
     StatusToClassPipe,
     StatusToTextPipe,

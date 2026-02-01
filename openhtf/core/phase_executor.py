@@ -71,11 +71,23 @@ class ExceptionInfo(object):
   exc_tb = attr.ib(type=types.TracebackType)
 
   def as_base_types(self) -> Dict[Text, Text]:
-    return {
+    result = {
         'exc_type': str(self.exc_type),
         'exc_val': str(self.exc_val),
         'exc_tb': self.get_traceback_string(),
     }
+    # Add operator action popup data if this is a frontend-friendly error.
+    # Check for the required attributes to support duck-typing.
+    if hasattr(self.exc_val, 'title') and hasattr(self.exc_val, 'description'):
+      result['operator_popup'] = {
+          'title': self.exc_val.title,
+          'description': self.exc_val.description,
+          'image_url': getattr(self.exc_val, 'image_url', None),
+      }
+      print(f"[DEBUG ExceptionInfo.as_base_types] Added operator_popup: {result['operator_popup']}")
+    else:
+      print(f"[DEBUG ExceptionInfo.as_base_types] No operator_popup attrs on {type(self.exc_val)}")
+    return result
 
   def get_traceback_string(self) -> Text:
     return ''.join(
