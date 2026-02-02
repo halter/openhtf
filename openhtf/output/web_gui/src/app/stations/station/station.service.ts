@@ -268,7 +268,7 @@ export class StationService extends Subscription {
         console.log('[DEBUG station.service] Status changed:', oldTest.status, '->', test.status);
         console.log('[DEBUG station.service] test.operatorPopup:', test.operatorPopup);
         if (test.status === TestStatus.error) {
-          // Check for operator popup from FrontendFriendlyError
+          // Check for operator popup from RecoveryPromptError
           if (test.operatorPopup) {
             console.log('[DEBUG station.service] Showing operator popup');
             this.operatorPopupService.show(test.operatorPopup);

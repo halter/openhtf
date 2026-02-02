@@ -616,7 +616,7 @@ class PlugsHandler(BaseTestHandler):
 class ProjectStaticFileHandler(web_gui_server.CorsRequestHandler):
   """Serves static files from the project root directory.
 
-  This allows FrontendFriendlyError to reference images relative to the
+  This allows RecoveryPromptError to reference images relative to the
   project root, e.g., image_url="/project/path/to/image.png".
 
   The project root defaults to the current working directory when the

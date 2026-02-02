@@ -180,7 +180,7 @@ export function makeTest(
     status = testStateStatusMap[rawState.status];
   }
 
-  // Extract operator popup from any phase that raised a FrontendFriendlyError.
+  // Extract operator popup from any phase that raised a RecoveryPromptError.
   // We look at all phases and take the last one with an operator_popup.
   const operatorPopup = extractOperatorPopup(rawState);
 

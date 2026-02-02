@@ -15,7 +15,7 @@
  */
 
 /**
- * Model for operator-facing popup data from FrontendFriendlyError.
+ * Model for operator-facing popup data from RecoveryPromptError.
  */
 
 export type LanguageCode = 'en' | 'th' | 'my';

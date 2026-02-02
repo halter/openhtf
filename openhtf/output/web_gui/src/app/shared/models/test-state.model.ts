@@ -45,7 +45,7 @@ export class TestState {
   fileName: string|null;  // This is null for tests *not* from the history.
   name: string;
   logs: LogRecord[];
-  // Operator-facing popup from FrontendFriendlyError, if any phase raised one.
+  // Operator-facing popup from RecoveryPromptError, if any phase raised one.
   operatorPopup: OperatorPopup|null;
   phases: Phase[];
   plugDescriptors: {[name: string]: PlugDescriptor};

@@ -91,10 +91,10 @@ class ExceptionInfoTest(unittest.TestCase):
     self.assertIn('exc_tb', result)
     self.assertNotIn('operator_popup', result)
 
-  def test_as_base_types_with_frontend_friendly_error(self):
-    """ExceptionInfo includes operator_popup for FrontendFriendlyError."""
+  def test_as_base_types_with_recovery_prompt_error(self):
+    """ExceptionInfo includes operator_popup for RecoveryPromptError."""
     # Create a mock error with the required attributes
-    class MockFrontendFriendlyError(Exception):
+    class MockRecoveryPromptError(Exception):
       def __init__(self):
         self.title = {"en": "Test Error", "th": "ข้อผิดพลาด"}
         self.description = {"en": "Check connection", "th": "ตรวจสอบการเชื่อมต่อ"}
@@ -102,8 +102,8 @@ class ExceptionInfoTest(unittest.TestCase):
         super().__init__(self.title.get("en", "Error"))
 
     try:
-      raise MockFrontendFriendlyError()
-    except MockFrontendFriendlyError:
+      raise MockRecoveryPromptError()
+    except MockRecoveryPromptError:
       info = phase_executor.ExceptionInfo(*sys.exc_info())
 
     result = info.as_base_types()
@@ -112,9 +112,9 @@ class ExceptionInfoTest(unittest.TestCase):
     self.assertEqual(result['operator_popup']['description'], {"en": "Check connection", "th": "ตรวจสอบการเชื่อมต่อ"})
     self.assertEqual(result['operator_popup']['image_url'], "/img/help.png")
 
-  def test_as_base_types_frontend_friendly_error_without_image(self):
-    """ExceptionInfo handles FrontendFriendlyError without image_url."""
-    class MockFrontendFriendlyErrorNoImage(Exception):
+  def test_as_base_types_recovery_prompt_error_without_image(self):
+    """ExceptionInfo handles RecoveryPromptError without image_url."""
+    class MockRecoveryPromptErrorNoImage(Exception):
       def __init__(self):
         self.title = {"en": "Test"}
         self.description = {"en": "Desc"}
@@ -122,8 +122,8 @@ class ExceptionInfoTest(unittest.TestCase):
         super().__init__("Test")
 
     try:
-      raise MockFrontendFriendlyErrorNoImage()
-    except MockFrontendFriendlyErrorNoImage:
+      raise MockRecoveryPromptErrorNoImage()
+    except MockRecoveryPromptErrorNoImage:
       info = phase_executor.ExceptionInfo(*sys.exc_info())
 
     result = info.as_base_types()
