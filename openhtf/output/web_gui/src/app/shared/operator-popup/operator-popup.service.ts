@@ -94,6 +94,17 @@ export class OperatorPopupService {
   acknowledge(): void {
     this.queue.shift();
     this.showNext();
+
+    // If no more popups, refocus the DUT scan input
+    // Use 150ms delay to ensure Enter keyup event completes before focusing
+    if (!this.currentPopupSubject.value) {
+      setTimeout(() => {
+        const input = document.querySelector('htf-user-input-plug input') as HTMLInputElement;
+        if (input) {
+          input.focus();
+        }
+      }, 150);
+    }
   }
 
   /**
