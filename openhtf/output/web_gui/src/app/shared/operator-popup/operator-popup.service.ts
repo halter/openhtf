@@ -71,21 +71,13 @@ export class OperatorPopupService {
     if (!this.currentPopupSubject.value) {
       this.showNext();
     }
-    // Move focus to the popup overlay to prevent keyboard events reaching inputs behind it
-    const focusPopup = () => {
-      const overlay = document.getElementById('operator-popup-overlay');
-      if (overlay) {
-        const activeEl = document.activeElement as HTMLElement;
-        if (activeEl && activeEl !== overlay) {
-          if (activeEl.blur) {
-            activeEl.blur();
-          }
-          overlay.focus();
-        }
+    // Focus OK button after Angular change detection settles
+    setTimeout(() => {
+      const okButton = document.querySelector('.operator-popup-modal .acknowledge-btn') as HTMLButtonElement;
+      if (okButton) {
+        okButton.focus();
       }
-    };
-    // Focus overlay after Angular change detection settles
-    setTimeout(focusPopup, 200);
+    }, 100);
   }
 
   /**

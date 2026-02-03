@@ -15,7 +15,9 @@
 -->
 
 <div class="operator-popup-overlay" *ngIf="popup" tabindex="-1" id="operator-popup-overlay" (click)="acknowledge()">
-  <div class="operator-popup-modal" (click)="$event.stopPropagation()">
+  <div class="operator-popup-modal"
+       (click)="$event.stopPropagation()"
+       (keydown)="$event.stopPropagation()">
     <div class="operator-popup-header">
       <h2 class="operator-popup-title">{{ title }}</h2>
       <div class="lang-selector">
@@ -58,6 +60,7 @@
 
     <div class="operator-popup-footer">
       <button
+        #okButton
         type="button"
         class="acknowledge-btn"
         (click)="acknowledge()">

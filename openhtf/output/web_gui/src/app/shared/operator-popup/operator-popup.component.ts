@@ -21,7 +21,7 @@
  * The modal blocks UI interaction until acknowledged.
  */
 
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 
 import {
   LANGUAGE_FLAGS,
@@ -37,11 +37,23 @@ import { OperatorPopupService } from './operator-popup.service';
   templateUrl: './operator-popup.component.html',
   styleUrls: ['./operator-popup.component.scss'],
 })
-export class OperatorPopupComponent {
+export class OperatorPopupComponent implements AfterViewChecked {
+  @ViewChild('okButton') okButton: ElementRef;
+
   dropdownOpen = false;
   imageZoomed = false;
 
   constructor(private popupService: OperatorPopupService) {}
+
+  ngAfterViewChecked(): void {
+    if (this.popup && this.okButton && document.activeElement !== this.okButton.nativeElement) {
+      const activeEl = document.activeElement;
+      const modal = document.querySelector('.operator-popup-modal');
+      if (!modal || !modal.contains(activeEl)) {
+        this.okButton.nativeElement.focus();
+      }
+    }
+  }
 
   get popup(): OperatorPopup | null {
     return this.popupService.currentPopup;
