@@ -642,18 +642,26 @@ class HistoryListHandler(BaseHistoryHandler):
       raise ValueError('history_path is None, try calling initialize() first')
 
     for file_name in os.listdir(self.history_path):
-      if not file_name.endswith('.pb'):
-        continue
       if not os.path.isfile(os.path.join(self.history_path, file_name)):
         continue
 
       dut_id = None
       start_time_millis = None
-      match = re.match(r'mfg_event_(.+)_(\d+)\.pb$', file_name)
 
-      if match is not None:
-        dut_id = match.group(1)
-        start_time_millis = int(match.group(2))
+      if file_name.endswith('.pb'):
+        match = re.match(r'mfg_event_(.+)_(\d+)\.pb$', file_name)
+        if match is not None:
+          dut_id = match.group(1)
+          start_time_millis = int(match.group(2))
+      elif file_name.endswith('.json'):
+        match = re.match(
+            r'(.+)-(PASS|FAIL|ERROR|TIMEOUT|ABORTED)-(\d+)\.json$',
+            file_name)
+        if match is not None:
+          dut_id = match.group(1)
+          start_time_millis = int(match.group(3))
+      else:
+        continue
 
       if filter_dut_id and dut_id not in filter_dut_id:
         continue
@@ -676,10 +684,19 @@ class HistoryItemHandler(BaseHistoryHandler):
   """GET endpoint for a test record from the history."""
 
   def get(self, file_name):
-    # TODO(kenadia): Implement the history item handler. The implementation
-    # depends on the format used to store test records on disk.
-    self.write('Not implemented.')
-    self.set_status(500)
+    file_path = os.path.join(self.history_path, file_name)
+    if not os.path.isfile(file_path):
+      self.set_status(404)
+      self.write('File not found.')
+      return
+
+    if file_name.endswith('.json'):
+      with open(file_path, 'r') as f:
+        test_record_dict = json.load(f)
+      self.write(_test_state_from_record(test_record_dict))
+    else:
+      self.write('Unsupported file format.')
+      self.set_status(400)
 
 
 class HistoryAttachmentsHandler(BaseHistoryHandler):
