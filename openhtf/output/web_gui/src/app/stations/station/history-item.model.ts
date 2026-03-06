@@ -43,6 +43,7 @@ export class HistoryItem {
   startTimeMillis: number|null;
   status: HistoryItemStatus;
   testState: TestState|null;  // Null if status is not `loaded`.
+  selected = false;  // Whether selected for CSV export.
 
   constructor(params: HistoryItemParams) {
     Object.assign(this, params);

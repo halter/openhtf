@@ -60,7 +60,7 @@
     </div>
 
     <div class="htf-layout-widgets-container">
-      <div class="htf-layout-widgets-left">
+      <div class="htf-layout-widgets-left" [class.is-dimmed]="exportMode">
         <div
           *ngIf="selectedTest !== null"
           class="past-test-warning htf-layout-widget">
@@ -87,7 +87,8 @@
         <htf-history
           [selectedTest]="selectedTest"
           [station]="selectedStation"
-          (onSelectTest)="onSelectTest($event.test)">
+          (onSelectTest)="onSelectTest($event.test)"
+          (exportModeChanged)="onExportModeChanged($event)">
         </htf-history>
       </div>
     </div>

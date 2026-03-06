@@ -19,13 +19,15 @@
  */
 
 import { trigger } from '@angular/animations';
+import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
+import { ConfigService } from '../../core/config.service';
 import { FlashMessageService } from '../../core/flash-message.service';
 import { washAndExpandIn } from '../../shared/animations';
 import { Station, StationStatus } from '../../shared/models/station.model';
 import { TestState, TestStatus } from '../../shared/models/test-state.model';
-import { messageFromErrorResponse } from '../../shared/util';
+import { getStationBaseUrl, messageFromErrorResponse } from '../../shared/util';
 
 import { HistoryItem, HistoryItemStatus } from './history-item.model';
 import { HistoryService } from './history.service';
@@ -47,21 +49,30 @@ export class HistoryComponent implements OnChanges {
   @Input() selectedTest: TestState|null;
   @Input() station: Station;
   @Output() onSelectTest = new EventEmitter<TestSelectedEvent>();
+  @Output() exportModeChanged = new EventEmitter<boolean>();
 
-  readonly collapsedNumTests = 5;
+  readonly initialDisplayCount = 5;
+  readonly loadMoreCount = 10;
   HistoryItemStatus = HistoryItemStatus;
   TestStatus = TestStatus;
-  expanded = false;
+  displayLimit = 5;
   hasError = false;
   history: HistoryItem[] = [];
   historyFromDiskEnabled = false;
   isLoading = false;
+  exportMode = false;
+  isRemoteClient = false;
 
   private lastClickedItem: HistoryItem|null = null;
 
   constructor(
       private historyService: HistoryService,
-      private flashMessage: FlashMessageService) {}
+      private flashMessage: FlashMessageService,
+      private http: HttpClient,
+      private config: ConfigService) {
+    const host = window.location.hostname;
+    this.isRemoteClient = host !== 'localhost' && host !== '127.0.0.1';
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if ('station' in changes) {
@@ -86,6 +97,11 @@ export class HistoryComponent implements OnChanges {
   }
 
   onClick(historyItem: HistoryItem) {
+    if (this.exportMode) {
+      this.toggleExportSelection(historyItem);
+      return;
+    }
+
     this.lastClickedItem = historyItem;
 
     if (historyItem.status === HistoryItemStatus.loading) {
@@ -127,8 +143,80 @@ export class HistoryComponent implements OnChanges {
         });
   }
 
-  toggleExpanded() {
-    this.expanded = !this.expanded;
+  loadMore() {
+    this.displayLimit += this.loadMoreCount;
+  }
+
+  collapse() {
+    this.displayLimit = this.initialDisplayCount;
+  }
+
+  enterExportMode() {
+    this.exportMode = true;
+    this.exportModeChanged.emit(true);
+  }
+
+  exitExportMode() {
+    this.exportMode = false;
+    this.history.forEach(item => item.selected = false);
+    this.exportModeChanged.emit(false);
+  }
+
+  toggleExportSelection(historyItem: HistoryItem) {
+    historyItem.selected = !historyItem.selected;
+  }
+
+  get selectedCount(): number {
+    return this.history.filter(item => item.selected).length;
+  }
+
+  downloadCsv() {
+    const selectedItems = this.history.filter(item => item.selected);
+
+    if (selectedItems.length === 0) {
+      this.flashMessage.warn('No items selected.');
+      return;
+    }
+
+    // Items with fileNames go directly. Items without (e.g. latest test from
+    // live state) are sent as identifiers for the backend to resolve.
+    const fileNames = selectedItems
+        .filter(item => item.fileName)
+        .map(item => item.fileName);
+    const identifiers = selectedItems
+        .filter(item => !item.fileName)
+        .map(item => ({dut_id: item.dutId, start_time_millis: item.startTimeMillis}));
+
+    const baseUrl = getStationBaseUrl(this.config.dashboardEnabled, this.station);
+    const url = `${baseUrl}/history/export`;
+    const body = {file_names: fileNames, identifiers};
+
+    this.http.post(url, body, {responseType: 'blob', observe: 'response'})
+        .toPromise()
+        .then(response => {
+          // Extract filename from Content-Disposition header.
+          const disposition = response.headers.get('Content-Disposition');
+          let filename = 'export.csv';
+          if (disposition) {
+            const match = disposition.match(/filename="(.+)"/);
+            if (match) {
+              filename = match[1];
+            }
+          }
+
+          // Trigger browser download.
+          const blob = response.body;
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = filename;
+          a.click();
+          window.URL.revokeObjectURL(downloadUrl);
+        })
+        .catch(error => {
+          console.error(error);
+          this.flashMessage.error('Failed to download CSV.');
+        });
   }
 
   private loadHistory() {

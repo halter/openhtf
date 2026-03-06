@@ -38,3 +38,8 @@
     border: 0;
   }
 }
+
+.is-dimmed {
+  opacity: 0.3;
+  pointer-events: none;
+}

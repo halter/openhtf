@@ -54,10 +54,10 @@ class PubSub(sockjs.tornado.SockJSConnection):
           try:
             client.send(message)
           except Exception as e:  # pylint: disable=broad-except
-            # Log the error but continue sending to other clients.
+            # don't log this error, it just adds noise and doesn't affect the test
             # This can happen when publishing from threads without an event loop
             # (e.g., child test threads calling publish_test_record).
-            _LOG.debug('Failed to send message to client: %s', e)
+            pass
 
   def on_open(self, info):
     _LOG.debug('New subscriber from %s.', info.ip)

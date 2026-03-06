@@ -16,15 +16,33 @@
 
 <div class="htf-layout-widget">
 
+  <div *ngIf="exportMode" class="export-toolbar">
+    <span class="export-toolbar-count">{{ selectedCount }} selected</span>
+    <div class="u-flex-grow"></div>
+    <button
+      type="button"
+      class="htf-rounded-button-grey"
+      (click)="exitExportMode()">
+      Exit
+    </button>
+    <button
+      type="button"
+      class="htf-rounded-button-grey export-download-button"
+      [disabled]="selectedCount === 0"
+      (click)="downloadCsv()">
+      Download CSV
+    </button>
+  </div>
+
   <div class="htf-layout-widget-header">
     <div>History</div>
     <div class="u-flex-grow"></div>
     <button
-      *ngIf="history.length > collapsedNumTests"
+      *ngIf="isRemoteClient && !exportMode && historyFromDiskEnabled && history.length > 0"
       type="button"
       class="htf-rounded-button-grey"
-      (click)="toggleExpanded()">
-      {{ expanded? 'Collapse' : 'Expand' }}
+      (click)="enterExportMode()">
+      Select
     </button>
   </div>
 
@@ -33,15 +51,19 @@
       <li
         class="history-item-container"
         htfTooltip="{{ historyItem.startTimeMillis | date:'M/d/yy h:mma' }}"
-        *ngIf="expanded || i < collapsedNumTests"
+        *ngIf="i < displayLimit"
         [@animateIn]="historyItem.drawAttention ? 'in' : ''"
         (@animateIn.done)="historyItem.drawAttention = false"
         [ngSwitch]="historyItem.status"
-        [class.is-selected]="isSelected(historyItem)"
+        [class.is-selected]="!exportMode && isSelected(historyItem)"
+        [class.is-export-selected]="exportMode && historyItem.selected"
         (click)="onClick(historyItem)">
 
-        <!-- Wrap list item contents in an extra div to enable a “slide down” animation effect. -->
+        <!-- Wrap list item contents in an extra div to enable a "slide down" animation effect. -->
         <div class="history-item htf-layout-header">
+          <div *ngIf="exportMode" class="export-checkbox">
+            <input type="checkbox" [checked]="historyItem.selected" (click)="$event.stopPropagation(); toggleExportSelection(historyItem)">
+          </div>
           <div class="history-item-name-container">
             <div class="history-item-name">
               {{ historyItem.dutId || historyItem.fileName }}
@@ -68,9 +90,21 @@
         </div>
       </li>
     </ng-container>
-    <li *ngIf="!expanded && history.length > collapsedNumTests" class="status-text">
-      Not showing {{ history.length - collapsedNumTests }} additional test
-      {{ history.length - collapsedNumTests === 1? 'run' : 'runs'}}.
+    <li *ngIf="history.length > initialDisplayCount" class="status-text load-more-row">
+      <button
+        *ngIf="history.length > displayLimit"
+        type="button"
+        class="htf-rounded-button-grey"
+        (click)="loadMore()">
+        Show 10 more
+      </button>
+      <button
+        *ngIf="displayLimit > initialDisplayCount"
+        type="button"
+        class="htf-rounded-button-grey"
+        (click)="collapse()">
+        Collapse
+      </button>
     </li>
     <li *ngIf="history.length === 0 && !isLoading && !hasError" class="status-text">
       There are no known completed test runs.
