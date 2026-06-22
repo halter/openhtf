@@ -60,7 +60,13 @@ jobs:
         working-directory: openhtf/output/web_gui
     steps:
       - uses: actions/checkout@v4
+      # Pin Node 16: this matches the stations' runtime and the toolchain the
+      # committed dist is built with. node-sass ^7 (libsass 3.5.5) does not
+      # build on the runner's newer default Node, so leaving it unpinned breaks
+      # the native build.
       - uses: actions/setup-node@v4
+        with:
+          node-version: '16'
       - run: npm install
       - run: npm run build
 
