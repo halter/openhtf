@@ -16,6 +16,60 @@
 
 @import 'vars';
 
+.operator-fault-panel {
+  border: 2px solid $theme-red;
+  margin-bottom: $widget-inner-padding;
+}
+
+.operator-fault-header {
+  background: $theme-red;
+  color: $theme-white;
+  font-weight: bold;
+}
+
+// Primary action — what the operator actually needs. Made prominent.
+.operator-fault-action-label {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.operator-fault-action-body {
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.operator-fault-action-hint {
+  font-size: 13px;
+  margin: 4px 0 8px;
+}
+
+// Secondary — engineering context, de-emphasised below the action.
+.operator-fault-issue {
+  border-top: 1px solid $border-light-grey;
+  font-size: 12px;
+  margin-top: 12px;
+  padding-top: 8px;
+}
+
+.operator-fault-issue-label {
+  font-weight: bold;
+}
+
+.operator-fault-issue-code {
+  font-family: monospace;
+}
+
+.operator-fault-issue-body {
+  font-family: inherit;
+  margin: 2px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .htf-status-indicator {
   line-height: 53px;
 }
