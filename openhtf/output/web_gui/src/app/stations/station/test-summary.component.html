@@ -33,18 +33,57 @@
     <div *ngIf="detail.whatToDo" class="operator-fault-action">
       <div class="operator-fault-action-label">What to do</div>
       <pre class="operator-fault-action-body">{{ detail.whatToDo }}</pre>
+      <!-- Escalation: the steps above didn't resolve it, so let the operator
+           alert Halter (a higher-priority page, distinct from a routine
+           report). Same spinner + good/fail feedback as the report button. -->
+      <div class="operator-fault-escalate">
+        <span class="operator-fault-escalate-hint">
+          Steps didn't fix it? This raises an incident with the on-call team.
+        </span>
+        <button
+          type="button"
+          class="htf-rounded-button-red operator-fault-report-button operator-fault-escalate-button"
+          [class.operator-fault-report-sent]="escalateStatus(detail) === ReportStatus.sent"
+          [class.operator-fault-report-error]="escalateStatus(detail) === ReportStatus.error"
+          [disabled]="!canEscalate(detail)"
+          (click)="escalateFault(detail)">
+          <span
+            *ngIf="escalateStatus(detail) === ReportStatus.sending"
+            class="operator-fault-spinner"></span>
+          <span [ngSwitch]="escalateStatus(detail)">
+            <span *ngSwitchCase="ReportStatus.sending">Reporting…</span>
+            <span *ngSwitchCase="ReportStatus.sent">✓ Issue reported</span>
+            <span *ngSwitchCase="ReportStatus.error">✕ Couldn't report — tap to retry</span>
+            <span *ngSwitchDefault>Report Issue</span>
+          </span>
+        </button>
+      </div>
     </div>
-    <!-- No known remediation: let the operator report it to engineering. -->
+    <!-- No known remediation: let the operator flag the uncaught error so
+         engineering can add a fault code. Informational — not a production
+         incident, so it stays a low-key grey button (contrast the red escalate
+         button above). -->
     <div *ngIf="!detail.whatToDo" class="operator-fault-action">
       <div class="operator-fault-action-label">Unexpected error</div>
       <div class="operator-fault-action-hint">
-        This isn't a known fault. Report it so engineering can add a fix.
+        This isn't a known fault. Let Halter know so engineering can add a fix.
       </div>
       <button
         type="button"
-        class="htf-rounded-button-grey"
+        class="htf-rounded-button-grey operator-fault-report-button"
+        [class.operator-fault-report-sent]="reportStatus(detail) === ReportStatus.sent"
+        [class.operator-fault-report-error]="reportStatus(detail) === ReportStatus.error"
+        [disabled]="!canReport(detail)"
         (click)="reportFault(detail)">
-        Report to engineering
+        <span
+          *ngIf="reportStatus(detail) === ReportStatus.sending"
+          class="operator-fault-spinner"></span>
+        <span [ngSwitch]="reportStatus(detail)">
+          <span *ngSwitchCase="ReportStatus.sending">Sending…</span>
+          <span *ngSwitchCase="ReportStatus.sent">✓ Sent to Halter</span>
+          <span *ngSwitchCase="ReportStatus.error">Couldn't send — tap to retry</span>
+          <span *ngSwitchDefault>Notify Halter</span>
+        </span>
       </button>
     </div>
     <!-- Secondary, de-emphasised: engineering context (code + issue). -->

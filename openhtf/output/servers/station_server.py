@@ -538,6 +538,47 @@ class FaultReportHandler(web_gui_server.CorsRequestHandler):
     self.finish({'status': 'reported'})
 
 
+# Station-side hook for escalating a KNOWN fault whose remediation steps did not
+# resolve it. Distinct from a routine fault report: the framework sets this to a
+# callable (payload_dict -> None) that forwards to an internal Halter service
+# raising a higher-priority alert (a PagerDuty incident). As with the report
+# handler, the GUI server NEVER calls external services itself — it only invokes
+# this injected handler.
+_FAULT_ESCALATE_HANDLER = None
+
+
+def set_fault_escalate_handler(handler):
+  """Register the callable invoked with the fault-escalate payload (see above)."""
+  global _FAULT_ESCALATE_HANDLER
+  _FAULT_ESCALATE_HANDLER = handler
+
+
+class FaultEscalateHandler(web_gui_server.CorsRequestHandler):
+  """POST endpoint for escalating a known fault from the GUI.
+
+  Same delegating contract as FaultReportHandler, but a separate hook so the
+  framework can route escalations to a higher-priority alert (PagerDuty) rather
+  than a routine report. Returns 501 if no handler is configured. The handler
+  runs on a thread so it never blocks the IOLoop.
+  """
+
+  def post(self):
+    handler = _FAULT_ESCALATE_HANDLER
+    if handler is None:
+      self.set_status(501)
+      self.finish({'error': 'fault escalation is not configured on this station'})
+      return
+    try:
+      payload = json.loads(self.request.body)
+    except (ValueError, TypeError):
+      self.set_status(400)
+      self.finish({'error': 'invalid JSON body'})
+      return
+    threading.Thread(target=handler, args=(payload,), daemon=True).start()
+    self.set_status(202)
+    self.finish({'status': 'escalated'})
+
+
 class AttachmentsHandler(BaseTestHandler):
   """GET endpoint for a file attached to a test."""
 
@@ -834,6 +875,7 @@ class StationServer(web_gui_server.WebGuiServer):
          'attachments/(?P<attachment_name>.+)', AttachmentsHandler),
         (r'/commands/(?P<command>.+)', CommandHandler),
         (r'/fault-report', FaultReportHandler),
+        (r'/fault-escalate', FaultEscalateHandler),
     ))
 
     # Optionally enable history from disk.
