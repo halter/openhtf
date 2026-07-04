@@ -42,7 +42,6 @@ export class StationComponent implements OnDestroy, OnInit {
   @Output() onDeselectStation = new EventEmitter<StationDeselectedEvent>();
 
   selectedTest: TestState|null = null;  // Selected in the history.
-  exportMode = false;
 
   constructor(
       private stationService: StationService, private config: ConfigService) {}
@@ -114,9 +113,5 @@ export class StationComponent implements OnDestroy, OnInit {
 
   onSelectTest(test: TestState) {
     this.selectedTest = test;
-  }
-
-  onExportModeChanged(active: boolean) {
-    this.exportMode = active;
   }
 }

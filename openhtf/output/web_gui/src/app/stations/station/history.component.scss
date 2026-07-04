@@ -25,11 +25,6 @@
     background: rgba($theme-blue, .2);
     border: 2px solid rgba($theme-blue, .8);
   }
-
-  &.is-export-selected {
-    background: rgba($theme-blue, .1);
-    border: 2px solid rgba($theme-blue, .5);
-  }
 }
 
 .history-item {
@@ -94,39 +89,4 @@
 
 .status-text {
   @include status-text;
-}
-
-.load-more-row {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-}
-
-.export-checkbox {
-  display: flex;
-  align-items: center;
-  margin-right: 8px;
-
-  input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-  }
-}
-
-.export-toolbar {
-  display: flex;
-  align-items: center;
-  padding: 8px 15px;
-  background: rgba($theme-blue, .1);
-  border-bottom: 1px solid rgba($theme-blue, .3);
-}
-
-.export-toolbar-count {
-  font-size: $font-size-small;
-  color: $text-grey;
-}
-
-.export-download-button {
-  margin-left: 8px;
 }

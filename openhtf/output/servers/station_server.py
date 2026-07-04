@@ -21,8 +21,6 @@ aggregate info from multiple station servers with a single frontend.
 
 import asyncio
 import contextlib
-import csv
-import io
 import itertools
 import json
 import logging
@@ -737,11 +735,11 @@ class HistoryListHandler(BaseHistoryHandler):
           start_time_millis = int(match.group(2))
       elif file_name.endswith('.json'):
         match = re.match(
-            r'([^-]+)-(.+)-(PASS|FAIL|ERROR|TIMEOUT|ABORTED)-(\d+)\.json$',
+            r'(.+)-(PASS|FAIL|ERROR|TIMEOUT|ABORTED)-(\d+)\.json$',
             file_name)
         if match is not None:
-          dut_id = match.group(2)
-          start_time_millis = int(match.group(4))
+          dut_id = match.group(1)
+          start_time_millis = int(match.group(3))
       else:
         continue
 
@@ -795,106 +793,6 @@ class HistoryAttachmentsHandler(BaseHistoryHandler):
     # depends on the format used to store test records on disk.
     self.write('Not implemented.')
     self.set_status(500)
-
-
-class HistoryExportHandler(BaseHistoryHandler):
-  """POST endpoint to export selected history items as a CSV of measurements."""
-
-  def set_default_headers(self):
-    super().set_default_headers()
-    self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-    self.set_header('Access-Control-Expose-Headers', 'Content-Disposition')
-
-  def _resolve_file_name(self, start_time_millis):
-    """Find a JSON report file containing the given start_time_millis."""
-    if start_time_millis is None:
-      return None
-    start_time_str = str(int(start_time_millis))
-    for file_name in os.listdir(self.history_path):
-      if file_name.endswith('.json') and start_time_str in file_name:
-        return file_name
-    _LOG.warning('Could not resolve file for start_time_millis=%s in %s',
-                 start_time_str, self.history_path)
-    return None
-
-  def post(self):
-    try:
-      body = json.loads(self.request.body.decode('utf-8'))
-    except ValueError:
-      self.set_status(400)
-      self.write('Invalid JSON body.')
-      return
-
-    file_names = body.get('file_names', [])
-    identifiers = body.get('identifiers', [])
-
-    for ident in identifiers:
-      resolved = self._resolve_file_name(ident.get('start_time_millis'))
-      if resolved:
-        file_names.append(resolved)
-
-    if not file_names:
-      self.set_status(400)
-      self.write('No files selected.')
-      return
-
-    rows = []
-    all_measurement_names = []
-    seen_measurement_names = set()
-    test_name = None
-    station_id = None
-
-    for file_name in file_names:
-      file_path = os.path.join(self.history_path, file_name)
-      if not os.path.isfile(file_path):
-        continue
-
-      with open(file_path, 'r') as f:
-        record = json.load(f)
-
-      if test_name is None:
-        test_name = record.get('metadata', {}).get('test_name', 'export')
-      if station_id is None:
-        station_id = record.get('station_id', 'unknown')
-
-      git_version = (record.get('metadata', {})
-          .get('additional', {})
-          .get('version_info', {})
-          .get('deployed_hash', ''))
-
-      row = {
-          'dut_id': record.get('dut_id', ''),
-          'start_time_millis': record.get('start_time_millis', ''),
-          'git_version': git_version,
-      }
-
-      for phase in record.get('phases', []):
-        for m_name, m_data in phase.get('measurements', {}).items():
-          if 'measured_value' in m_data:
-            row[m_name] = m_data['measured_value']
-            if m_name not in seen_measurement_names:
-              seen_measurement_names.add(m_name)
-              all_measurement_names.append(m_name)
-
-      rows.append(row)
-
-    meta_cols = ['dut_id', 'start_time_millis', 'git_version']
-    header = meta_cols + all_measurement_names
-
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(header)
-    for row in rows:
-      writer.writerow([row.get(col, '') for col in header])
-
-    csv_data = output.getvalue()
-
-    now_millis = int(time.time() * 1000)
-    filename = f'{test_name or "export"}-{station_id or "unknown"}-{now_millis}.csv'
-
-    self.set_header('Content-Type', 'text/csv')
-    self.set_header('Content-Disposition', f'attachment; filename="{filename}"')
-    self.write(csv_data)
 
 
 class StationMulticast(multicast.MulticastListener):
@@ -1001,9 +899,6 @@ class StationServer(web_gui_server.WebGuiServer):
     if history_path is not None:
       routes.extend((
           (r'/history', HistoryListHandler, {
-              'history_path': history_path
-          }),
-          (r'/history/export', HistoryExportHandler, {
               'history_path': history_path
           }),
           (r'/history/(?P<file_name>[^/]+)', HistoryItemHandler, {
