@@ -65,6 +65,13 @@
   min-width: 0;  // See https://css-tricks.com/flexbox-truncated-text/
 }
 
+// When a slot label box is present (child tests only), centre the DUT id/name
+// block in the space between the label box and the status indicator. Rows with
+// no label (e.g. parent tests) keep the default left alignment.
+.history-item-label + .history-item-name-container {
+  text-align: center;
+}
+
 .history-item-name {
   overflow: hidden;
   text-overflow: ellipsis;
