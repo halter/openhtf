@@ -38,6 +38,25 @@
   user-select: none;
 }
 
+.history-item-label {
+  // Generic per-test label (e.g. ICT 6up slot number). Fixed 1/6 of the row width,
+  // blue to match the UI, centred; font sized to fit with graceful truncation for
+  // longer labels.
+  flex: 0 0 16.6667%;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  background: $theme-blue;
+  color: #fff;
+  font-size: $font-size-small;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .history-item-name-container {
   flex-grow: 1;
   line-height: initial;

@@ -64,6 +64,9 @@
           <div *ngIf="exportMode" class="export-checkbox">
             <input type="checkbox" [checked]="historyItem.selected" (click)="$event.stopPropagation(); toggleExportSelection(historyItem)">
           </div>
+          <div *ngIf="historyItem.testState?.label" class="history-item-label">
+            {{ historyItem.testState.label }}
+          </div>
           <div class="history-item-name-container">
             <div class="history-item-name">
               {{ historyItem.dutId || historyItem.fileName }}
