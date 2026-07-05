@@ -37,13 +37,27 @@ export enum TestStatus {
 
 export class PlugDescriptor { mro: string[]; }
 
+// A structured outcome detail recorded on the test record (OpenHTF's
+// TestRecord.outcome_details). Halter uses this to surface an operator-facing
+// fault code + remediation on a failed test; see the operator fault panel in
+// test-summary.component.
+export interface OutcomeDetail {
+  code: string;
+  issue: string;     // what went wrong (text before the "What to do:" marker)
+  whatToDo: string;  // remediation steps (text after the marker); '' if none
+}
+
 export class TestState {
   attachments: Attachment[];
   dutId: string;
   endTimeMillis: number|null;
   fileName: string|null;  // This is null for tests *not* from the history.
   name: string;
+  // Generic, optional label shown in the results/history panel (e.g. ICT 6up slot
+  // number). Null when the test plan didn't set metadata['label'].
+  label: string|null;
   logs: LogRecord[];
+  outcomeDetails: OutcomeDetail[];
   phases: Phase[];
   plugDescriptors: {[name: string]: PlugDescriptor};
   plugStates: {[name: string]: {}};
