@@ -51,6 +51,10 @@ _LOG = logging.getLogger(__name__)
 class OutcomeDetails(object):
   code = attr.ib(type=Union[Text, int])
   description = attr.ib(type=Text)
+  # Optional Thai translation of description, rendered by the station GUI's
+  # language toggle. Not meant for downstream consumers: the JSON report output
+  # strips it before shipping.
+  description_th = attr.ib(type=Optional[Text], default=None)
 
 
 class Outcome(enum.Enum):
@@ -212,14 +216,17 @@ class TestRecord(object):
 
   def add_outcome_details(self,
                           code: Union[int, Text],
-                          description: Text = '') -> None:
+                          description: Text = '',
+                          description_th: Optional[Text] = None) -> None:
     """Adds a code with optional description to this record's outcome_details.
 
     Args:
       code: A code name or number.
       description: A string providing more details about the outcome code.
+      description_th: Optional Thai translation of description, shown by the
+        station GUI's language toggle (stripped from shipped JSON reports).
     """
-    self.outcome_details.append(OutcomeDetails(code, description))
+    self.outcome_details.append(OutcomeDetails(code, description, description_th))
 
   def add_phase_record(self, phase_record: 'PhaseRecord') -> None:
     self.phases.append(phase_record)

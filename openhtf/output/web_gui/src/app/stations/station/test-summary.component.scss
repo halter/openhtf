@@ -27,6 +27,29 @@
   font-weight: bold;
 }
 
+// Global EN/ไทย toggle in the panel header. The active language reads as a
+// solid white chip on the red bar; the inactive one stays quiet.
+.operator-fault-language-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.operator-fault-language-button {
+  background: transparent;
+  border: 1px solid $theme-white;
+  border-radius: 3px;
+  color: $theme-white;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 1px 8px;
+
+  &.operator-fault-language-active {
+    background: $theme-white;
+    color: $theme-red;
+  }
+}
+
 // Primary action — what the operator actually needs. Made prominent.
 .operator-fault-action-label {
   font-size: 16px;

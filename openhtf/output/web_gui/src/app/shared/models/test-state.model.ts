@@ -45,6 +45,11 @@ export interface OutcomeDetail {
   code: string;
   issue: string;     // what went wrong (text before the "What to do:" marker)
   whatToDo: string;  // remediation steps (text after the marker); '' if none
+  // Thai translation of issue/whatToDo (from description_th), split on the same
+  // literal English marker. '' when the fault has no Thai translation — the
+  // panel's language toggle then falls back to English.
+  issueTh: string;
+  whatToDoTh: string;
 }
 
 export class TestState {
