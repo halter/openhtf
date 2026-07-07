@@ -75,7 +75,8 @@ export interface RawTestRecord {
   log_records: RawLogRecord[];
   metadata: RawMetadata;
   outcome: string;
-  outcome_details: Array<{code: string|number; description: string}>;
+  outcome_details:
+      Array<{code: string|number; description: string; description_th?: string|null}>;
   phases: RawPhase[];
   start_time_millis: number;
   station_id: string;
@@ -169,18 +170,30 @@ export function makeTest(
   // Each description is split into an "issue" and a "what to do" section at the
   // "What to do:" marker so the GUI fault panel can label them.
   const faultWhatToDoMarker = 'What to do:';
+  // The Thai text (description_th) uses the same literal English marker as a
+  // machine separator; only the displayed section label is localized.
+  const splitOnWhatToDoMarker = (description: string) => {
+    const markerIndex = description.indexOf(faultWhatToDoMarker);
+    const issue =
+        (markerIndex >= 0 ? description.slice(0, markerIndex) : description).trim();
+    const whatToDo = markerIndex >= 0 ?
+        description.slice(markerIndex + faultWhatToDoMarker.length).trim() :
+        '';
+    return {issue, whatToDo};
+  };
   const outcomeDetails: OutcomeDetail[] =
       (rawState.test_record.outcome_details || [])
           .filter(detail => `${detail.code}` !== 'OperatorActionRequired')
           .map(detail => {
-            const description = detail.description || '';
-            const markerIndex = description.indexOf(faultWhatToDoMarker);
-            const issue =
-                (markerIndex >= 0 ? description.slice(0, markerIndex) : description).trim();
-            const whatToDo = markerIndex >= 0 ?
-                description.slice(markerIndex + faultWhatToDoMarker.length).trim() :
-                '';
-            return {code: `${detail.code}`, issue, whatToDo};
+            const {issue, whatToDo} = splitOnWhatToDoMarker(detail.description || '');
+            const thai = splitOnWhatToDoMarker(detail.description_th || '');
+            return {
+              code: `${detail.code}`,
+              issue,
+              whatToDo,
+              issueTh: thai.issue,
+              whatToDoTh: thai.whatToDo,
+            };
           });
 
   return new TestState({
