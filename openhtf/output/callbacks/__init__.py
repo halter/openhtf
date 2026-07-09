@@ -21,6 +21,7 @@ examples.
 
 from collections.abc import Iterable
 import contextlib
+import os
 import pickle
 import shutil
 import tempfile
@@ -36,11 +37,20 @@ SerializedTestRecord = Union[Text, bytes, Iterator[Union[Text, bytes]]]
 
 # TODO(wallacbe): Switch to util
 class Atomic(object):
-  """Class that does atomic write in a contextual manner."""
+  """Class that does atomic write in a contextual manner.
+
+  The temporary file is created in the destination's directory so that
+  publishing is a true same-filesystem rename: readers can never observe a
+  partially written or partially copied file. Contents are fsynced before the
+  rename so a power loss cannot leave an empty or truncated file behind. On
+  serialization failure, discard() removes the temporary file instead of
+  publishing partial output.
+  """
 
   def __init__(self, filename: Text):
     self.filename = filename
-    self.temp = tempfile.NamedTemporaryFile(delete=False)
+    self.temp = tempfile.NamedTemporaryFile(
+        dir=os.path.dirname(filename) or None, delete=False)
 
   def write(self, write_data: Union[Text, bytes]) -> int:
     if isinstance(write_data, str):
@@ -48,8 +58,14 @@ class Atomic(object):
     return self.temp.write(write_data)
 
   def close(self) -> None:
+    self.temp.flush()
+    os.fsync(self.temp.fileno())
     self.temp.close()
     shutil.move(self.temp.name, self.filename)
+
+  def discard(self) -> None:
+    self.temp.close()
+    os.unlink(self.temp.name)
 
 
 class CloseAttachments(object):
@@ -120,7 +136,10 @@ class OutputToFile(object):
       output_file = self.open_file(filename)
       try:
         yield output_file
-      finally:
+      except BaseException:
+        output_file.discard()
+        raise
+      else:
         output_file.close()
     elif self.output_file:
       yield self.output_file
