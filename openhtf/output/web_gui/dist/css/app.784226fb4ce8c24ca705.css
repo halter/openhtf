@@ -104,7 +104,7 @@ input[type='text'] {
   input[type='text']:focus {
     border-color: rgba(0, 119, 255, 0.5);
     outline: none;
-    animation: htf-base-input-pulse 2s infinite; }
+    animation: htf-base-input-pulse 2s 5; }
 
 @keyframes htf-base-input-pulse {
   0% {
@@ -917,4 +917,4 @@ template {
 .u-text-color-error {
   color: #ff5d4e; }
 
-/*# sourceMappingURL=app.e5169df5c7051e573d29.css.map*/
+/*# sourceMappingURL=app.784226fb4ce8c24ca705.css.map*/
