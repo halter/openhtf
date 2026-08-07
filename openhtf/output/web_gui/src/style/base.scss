@@ -59,7 +59,10 @@ input[type='text'] {
   &:focus {
     border-color: rgba($theme-blue, .5);
     outline: none;
-    animation: htf-base-input-pulse 2s infinite;
+    // A box-shadow animation repaints every frame, and the idle screen keeps
+    // this input focused, so an infinite pulse burns CPU around the clock.
+    // Five cycles show the cue after each focus, then the input goes still.
+    animation: htf-base-input-pulse 2s 5;
   }
 }
 

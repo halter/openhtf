@@ -24,7 +24,14 @@
   overflow: hidden;
 
   &.is-complete {
-    animation: htf-progress-bar-pulse 2s infinite;
+    // Stations sit on the finished-test screen between DUTs, so anything that
+    // animates here runs around the clock. Pulse three times to mark the
+    // finish, then stop both the pulse and the stripes so the screen is static.
+    animation: htf-progress-bar-pulse 2s 3;
+
+    .stripes {
+      animation: none;
+    }
   }
 }
 
@@ -43,9 +50,14 @@
 }
 
 .stripes {
-  transform: skewX(45deg);
+  // The stripes scroll by translating the element one 50px tile per cycle
+  // rather than by animating background-position: transform animations run on
+  // the compositor, while background-position repaints the bar every frame.
+  // The extra tile of width hides the seam and .outer clips the overhang.
+  transform: translateX(0) skewX(45deg);
   height: 100%;
-  width: 100%;
+  width: calc(100% + 50px);
+  margin-left: -50px;
   background-image: linear-gradient(
     -45deg,
     rgba($theme-white, .08) 25%,
@@ -76,10 +88,10 @@
 
 @keyframes move {
   0% {
-    background-position: 0 0;
+    transform: translateX(0) skewX(45deg);
   }
 
   100% {
-    background-position: 50px 50px;
+    transform: translateX(50px) skewX(45deg);
   }
 }
