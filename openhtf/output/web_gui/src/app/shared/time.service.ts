@@ -25,7 +25,10 @@ import 'rxjs/add/operator/publish';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-const UPDATE_INTERVAL_MS = 100;
+// Every tick triggers app-wide Angular change detection via zone.js, and no
+// consumer displays finer than whole seconds, so ticking faster than 1s only
+// recomputes identical output.
+const UPDATE_INTERVAL_MS = 1000;
 
 @Injectable()
 export class TimeService {
