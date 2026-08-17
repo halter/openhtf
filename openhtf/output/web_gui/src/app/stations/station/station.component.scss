@@ -22,6 +22,29 @@
   margin-bottom: 12px;
 }
 
+.lockout-banner {
+  background-color: $theme-red;
+  border-radius: 3px;
+  color: $text-white;
+  margin-bottom: $gutter-small;
+  padding: 12px $widget-inner-padding;
+}
+
+.lockout-banner-title {
+  font-size: $font-size-large;
+  font-weight: bold;
+}
+
+.lockout-banner-reason {
+  margin-top: 4px;
+}
+
+.lockout-banner-meta {
+  font-size: $font-size-small;
+  margin-top: 4px;
+  opacity: .85;
+}
+
 .status-bar {
   margin-bottom: ($gutter-small - 2px);
 }

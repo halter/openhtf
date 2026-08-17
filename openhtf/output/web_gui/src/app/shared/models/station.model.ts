@@ -40,6 +40,10 @@ export class Station {
   host: string;
   hostPort: string;  // Used to uniquely identify stations.
   label: string;
+  lockoutLastUpdatedAt: string|null;
+  lockoutLastUpdatedBy: string|null;
+  lockoutLocked: boolean|null;
+  lockoutReason: string|null;
   port: string;
   stationId: string;
   status: StationStatus;
