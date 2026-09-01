@@ -27,6 +27,20 @@
   font-weight: bold;
 }
 
+.operator-fault-specs-body {
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0 0 $widget-inner-padding;
+  word-break: break-word;
+
+  // pre-wrap goes on the line, not on the container: on the container it also
+  // preserves the template's indentation between the divs, as blank lines.
+  > div {
+    white-space: pre-wrap;
+  }
+}
+
 // Global EN/ไทย toggle in the panel header. The active language reads as a
 // solid white chip on the red bar; the inactive one stays quiet.
 .operator-fault-language-toggle {
@@ -157,6 +171,10 @@
 
 .operator-fault-issue-code {
   font-family: monospace;
+}
+
+.operator-fault-issue-catalogue-code {
+  display: block;
 }
 
 .operator-fault-issue-body {

@@ -55,6 +55,12 @@ class OutcomeDetails(object):
   # language toggle. Not meant for downstream consumers: the JSON report output
   # strips it before shipping.
   description_th = attr.ib(type=Optional[Text], default=None)
+  # False means the station GUI shows the message and offers no notify/escalate
+  # button. GUI-only, like description_th: the JSON report output strips it.
+  notifiable = attr.ib(type=bool, default=True)
+  # The catalogue entry that supplied this detail's remediation text, when that is
+  # not the detail's own code. GUI-only: the JSON report output strips it.
+  catalogue_code = attr.ib(type=Optional[Text], default=None)
 
 
 class Outcome(enum.Enum):
@@ -217,7 +223,9 @@ class TestRecord(object):
   def add_outcome_details(self,
                           code: Union[int, Text],
                           description: Text = '',
-                          description_th: Optional[Text] = None) -> None:
+                          description_th: Optional[Text] = None,
+                          notifiable: bool = True,
+                          catalogue_code: Optional[Text] = None) -> None:
     """Adds a code with optional description to this record's outcome_details.
 
     Args:
@@ -225,8 +233,15 @@ class TestRecord(object):
       description: A string providing more details about the outcome code.
       description_th: Optional Thai translation of description, shown by the
         station GUI's language toggle (stripped from shipped JSON reports).
+      notifiable: Whether the station GUI offers a notify/escalate button for
+        this detail. False shows the message only (stripped from shipped JSON
+        reports).
+      catalogue_code: The catalogue entry the remediation text came from, when it
+        differs from `code` (stripped from shipped JSON reports).
     """
-    self.outcome_details.append(OutcomeDetails(code, description, description_th))
+    self.outcome_details.append(
+        OutcomeDetails(code, description, description_th, notifiable,
+                       catalogue_code))
 
   def add_phase_record(self, phase_record: 'PhaseRecord') -> None:
     self.phases.append(phase_record)
