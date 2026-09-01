@@ -51,6 +51,7 @@ const LANGUAGE_STORAGE_KEY = 'htf-fault-panel-language';
 const PANEL_LABELS: {[lang in FaultPanelLanguage]: {[key: string]: string}} = {
   en: {
     header: 'TEST FAILED — ACTION REQUIRED',
+    headerDutFail: 'TEST FAILED — UNIT DID NOT MEET SPEC',
     whatToDo: 'What to do',
     escalateHint: `Steps didn't fix it? This raises an incident with the on-call team.`,
     escalateSending: 'Reporting…',
@@ -67,6 +68,7 @@ const PANEL_LABELS: {[lang in FaultPanelLanguage]: {[key: string]: string}} = {
   },
   th: {
     header: 'การทดสอบล้มเหลว — ต้องดำเนินการ',
+    headerDutFail: 'การทดสอบล้มเหลว — ชิ้นงานไม่ผ่านเกณฑ์',
     whatToDo: 'สิ่งที่ต้องทำ',
     escalateHint: 'ทำตามขั้นตอนแล้วยังไม่หาย? ปุ่มนี้จะแจ้งเหตุไปยังทีมออนคอล',
     escalateSending: 'กำลังรายงาน…',
@@ -122,6 +124,37 @@ export class TestSummaryComponent implements OnChanges {
     return !!(this.test && this.test.outcomeDetails &&
               this.test.outcomeDetails.length &&
               this.test.status !== TestStatus.aborted);
+  }
+
+  /**
+   * The spec list split into prefix / emphasised / rest, per line.
+   *
+   * The bullet shape ('  - NAME = value') is owned by
+   * fault_catalog._failing_measurements; change it there and the emphasis stops.
+   */
+  specLines(detail: OutcomeDetail): Array<{prefix: string, bold: string, rest: string}> {
+    const dutId = this.test && this.test.dutId;
+    return this.issueText(detail).split('\n').map(line => {
+      const bulletMatch = line.match(/^(\s*-\s*)([^=]+?)(\s*=\s.*)$/);
+      if (bulletMatch) {
+        return {prefix: bulletMatch[1], bold: bulletMatch[2], rest: bulletMatch[3]};
+      }
+      const dutIndex = dutId ? line.indexOf(dutId) : -1;
+      if (dutIndex >= 0) {
+        return {
+          prefix: line.slice(0, dutIndex),
+          bold: dutId,
+          rest: line.slice(dutIndex + dutId.length),
+        };
+      }
+      return {prefix: line, bold: '', rest: ''};
+    });
+  }
+
+  // Whether any detail on this panel can be notified/escalated. Header wording only.
+  get anyNotifiable(): boolean {
+    return !!(this.test && this.test.outcomeDetails &&
+              this.test.outcomeDetails.some(detail => detail.notifiable));
   }
 
   // Stable identity for a fault detail across re-polls (object identity is not).

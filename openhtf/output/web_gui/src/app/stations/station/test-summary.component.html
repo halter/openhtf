@@ -24,7 +24,7 @@
   class="htf-layout-widget operator-fault-panel"
   *ngIf="showFaultPanel">
   <div class="htf-layout-widget-header operator-fault-header">
-    <div>{{ label('header') }}</div>
+    <div>{{ label(anyNotifiable ? 'header' : 'headerDutFail') }}</div>
     <div class="u-flex-grow"></div>
     <!-- Global language toggle (persisted in localStorage). Static labels are
          hardcoded bilingual; per-fault text comes translated from the catalogue
@@ -45,14 +45,26 @@
   <div
     class="htf-layout-widget-body operator-fault-detail"
     *ngFor="let detail of test.outcomeDetails">
+    <!-- A unit fault leads with what this unit failed: the operator's decision is
+         about the part in hand, and the spec list is the whole story. For a station
+         fault the same text stays in the de-emphasised Issue block at the bottom,
+         because there the remediation is what matters. -->
+    <div *ngIf="!detail.notifiable" class="operator-fault-specs">
+      <div class="operator-fault-specs-body">
+        <div *ngFor="let line of specLines(detail)"
+          ><span>{{ line.prefix }}</span><strong>{{ line.bold }}</strong><span>{{ line.rest }}</span></div>
+      </div>
+    </div>
     <!-- Primary: what the operator should do (what they actually need). -->
     <div *ngIf="detail.whatToDo" class="operator-fault-action">
       <div class="operator-fault-action-label">{{ label('whatToDo') }}</div>
       <pre class="operator-fault-action-body">{{ whatToDoText(detail) }}</pre>
       <!-- Escalation: the steps above didn't resolve it, so let the operator
            alert Halter (a higher-priority page, distinct from a routine
-           report). Same spinner + good/fail feedback as the report button. -->
-      <div class="operator-fault-escalate">
+           report). Same spinner + good/fail feedback as the report button.
+           Suppressed on a non-notifiable detail: a DUT that failed a
+           measurement is yield loss, and paging on it buries the real faults. -->
+      <div class="operator-fault-escalate" *ngIf="detail.notifiable">
         <span class="operator-fault-escalate-hint">
           {{ label('escalateHint') }}
         </span>
@@ -79,7 +91,7 @@
          engineering can add a fault code. Informational — not a production
          incident, so it stays a low-key grey button (contrast the red escalate
          button above). -->
-    <div *ngIf="!detail.whatToDo" class="operator-fault-action">
+    <div *ngIf="!detail.whatToDo && detail.notifiable" class="operator-fault-action">
       <div class="operator-fault-action-label">{{ label('unexpectedError') }}</div>
       <div class="operator-fault-action-hint">
         {{ label('unexpectedHint') }}
@@ -108,7 +120,15 @@
         <span class="operator-fault-issue-label">{{ label('issue') }}</span>
         <span class="operator-fault-issue-code">{{ detail.code }}</span>
       </div>
-      <pre class="operator-fault-issue-body">{{ issueText(detail) }}</pre>
+      <!-- The catalogue entry that worded this panel, when it is not the code above:
+           a DUT fail records OpenHTF's STOP but is worded by ERR_UNIT_OUT_OF_SPEC, and
+           an engineer needs the entry's name to find it in FarmHand. -->
+      <div
+        *ngIf="detail.catalogueCode"
+        class="operator-fault-issue-code operator-fault-issue-catalogue-code">{{ detail.catalogueCode }}</div>
+      <pre
+        *ngIf="detail.notifiable"
+        class="operator-fault-issue-body">{{ issueText(detail) }}</pre>
     </div>
   </div>
 </div>

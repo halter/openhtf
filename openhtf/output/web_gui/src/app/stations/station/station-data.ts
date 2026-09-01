@@ -76,7 +76,8 @@ export interface RawTestRecord {
   metadata: RawMetadata;
   outcome: string;
   outcome_details:
-      Array<{code: string|number; description: string; description_th?: string|null}>;
+      Array<{code: string|number; description: string; description_th?: string|null;
+              notifiable?: boolean; catalogue_code?: string|null}>;
   phases: RawPhase[];
   start_time_millis: number;
   station_id: string;
@@ -193,6 +194,8 @@ export function makeTest(
               whatToDo,
               issueTh: thai.issue,
               whatToDoTh: thai.whatToDo,
+              notifiable: detail.notifiable !== false,
+              catalogueCode: detail.catalogue_code || '',
             };
           });
 
