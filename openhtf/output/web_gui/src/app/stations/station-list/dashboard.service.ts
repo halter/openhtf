@@ -48,6 +48,13 @@ interface RawStation {
   ddns_hostname?: string|null;
   ddns_resolved_ip?: string|null;
   ddns_status?: string|null;
+  // The lockout fields are only emitted by the single-station dashboard
+  // server on Halter stations; absent elsewhere, in which case the UI shows
+  // no lockout banner.
+  lockout_locked?: boolean|null;
+  lockout_reason?: string|null;
+  lockout_last_updated_by?: string|null;
+  lockout_last_updated_at?: string|null;
 }
 
 interface DashboardApiResponse {
@@ -113,6 +120,18 @@ export class DashboardService extends Subscription {
         host: rawStation.host,
         hostPort,
         label: DashboardService.getStationLabel(rawStation),
+        lockoutLastUpdatedAt: rawStation.lockout_last_updated_at != null ?
+            rawStation.lockout_last_updated_at :
+            null,
+        lockoutLastUpdatedBy: rawStation.lockout_last_updated_by != null ?
+            rawStation.lockout_last_updated_by :
+            null,
+        lockoutLocked: typeof rawStation.lockout_locked === 'boolean' ?
+            rawStation.lockout_locked :
+            null,
+        lockoutReason: rawStation.lockout_reason != null ?
+            rawStation.lockout_reason :
+            null,
         port: rawStation.port,
         stationId: rawStation.station_id,
         status: dashboardStatusMap[rawStation.status],

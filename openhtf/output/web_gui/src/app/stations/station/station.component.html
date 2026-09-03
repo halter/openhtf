@@ -16,6 +16,24 @@
 
 <div class="station">
 
+  <div
+    *ngIf="selectedStation.lockoutLocked"
+    class="lockout-banner">
+    <div class="lockout-banner-title">
+      &#x26A0; STATION LOCKED OUT: testing restricted to control units
+    </div>
+    <div
+      *ngIf="selectedStation.lockoutReason"
+      class="lockout-banner-reason">
+      {{ selectedStation.lockoutReason }}
+    </div>
+    <div
+      *ngIf="lockoutUpdatedText"
+      class="lockout-banner-meta">
+      {{ lockoutUpdatedText }}
+    </div>
+  </div>
+
   <div class="nav-bar">
     <button
       *ngIf="dashboardEnabled"
