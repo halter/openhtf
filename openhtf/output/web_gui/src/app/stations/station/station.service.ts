@@ -130,6 +130,22 @@ export class StationService extends Subscription {
   }
 
   /**
+   * End the running test, leaving the station process up.
+   *
+   * The station answers with what it did - it refuses at the DUT prompt, and
+   * while a previous cancel is still tearing down - so the reply is shown
+   * rather than a message of our own.
+   */
+  cancel(station: Station) {
+    const baseUrl = getStationBaseUrl(this.config.dashboardEnabled, station);
+    const url = `${baseUrl}/commands/cancel`;
+
+    this.http.post(url, '').toPromise().then((response: Response) => {
+      this.flashMessage.warn(response.text());
+    });
+  }
+
+  /**
    * Step 1: Validate that a JSON response matches the expected format.
    */
   private static validateResponse(response: {}) {
