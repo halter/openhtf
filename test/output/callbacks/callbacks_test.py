@@ -20,6 +20,8 @@ actually care for.
 
 import io
 import json
+import os
+import tempfile
 
 import openhtf as htf
 from openhtf import util
@@ -98,6 +100,43 @@ class TestOutput(test.TestCase):
         break
     else:
       raise AssertionError('No attachment named %s' % attachment_name)
+
+
+class TestAtomicOutput(test.TestCase):
+
+  @classmethod
+  def setUpClass(cls):
+    super(TestAtomicOutput, cls).setUpClass()
+    cls._test = htf.Test(all_the_things.attachments)
+    cls._test.make_uid = lambda: 'UNITTEST:MOCK:UID'
+
+  @test.patch_plugs(user_mock='openhtf.plugs.user_input.UserInput')
+  def test_json_published_atomically(self, user_mock):
+    user_mock.prompt.return_value = 'SomeWidget'
+    record = yield self._test
+    with tempfile.TemporaryDirectory() as tmpdir:
+      pattern = os.path.join(tmpdir, '{dut_id}.json')
+      json_factory.OutputToJSON(pattern, indent=2)(record)
+      published = os.listdir(tmpdir)
+      self.assertEqual(['%s.json' % record.dut_id], published)
+      with open(os.path.join(tmpdir, published[0])) as report:
+        json.load(report)
+
+  @test.patch_plugs(user_mock='openhtf.plugs.user_input.UserInput')
+  def test_serialization_failure_publishes_nothing(self, user_mock):
+    user_mock.prompt.return_value = 'SomeWidget'
+    record = yield self._test
+    attachment = record.phases[-1].attachments['test_attachment']
+    original_filename = attachment._filename
+    attachment._filename = original_filename + '-missing'
+    try:
+      with tempfile.TemporaryDirectory() as tmpdir:
+        pattern = os.path.join(tmpdir, '{dut_id}.json')
+        with self.assertRaises(FileNotFoundError):
+          json_factory.OutputToJSON(pattern, indent=2)(record)
+        self.assertEqual([], os.listdir(tmpdir))
+    finally:
+      attachment._filename = original_filename
 
 
 class TestMfgEventOutput(test.TestCase):
