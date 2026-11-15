@@ -16,10 +16,26 @@ import collections
 import unittest
 
 import attr
+from openhtf.core import diagnoses_lib
 from openhtf.util import data
 
 
 class TestData(unittest.TestCase):
+
+  def test_convert_to_base_types_class_with_as_base_types(self):
+    # A phase descriptor's diagnoser carries its DiagResultEnum class as result_type; the class
+    # has as_base_types too, unbound, and calling it raised TypeError.
+
+    class Result(diagnoses_lib.DiagResultEnum):
+      PASS = 'PASS'
+
+    @attr.s
+    class Diagnoser(object):
+      result_type = attr.ib()
+
+    converted = data.convert_to_base_types(Diagnoser(result_type=Result))
+    self.assertEqual(converted['result_type'], str(Result))
+    self.assertEqual(data.convert_to_base_types(Result.PASS), 'PASS')
 
   def test_convert_to_base_types(self):
 
