@@ -90,6 +90,17 @@ export class StationComponent implements OnDestroy, OnInit {
     return '';
   }
 
+  get lockoutUnlockProgressText(): string {
+    const station = this.selectedStation;
+    if (!station || !station.lockoutLocked || !station.lockoutUnlockProgress) {
+      return '';
+    }
+    const progress = station.lockoutUnlockProgress;
+    return `${progress.completedRuns}/${
+        progress.requiredRuns} unique collars ran, ${
+        progress.completedSuccesses}/${progress.requiredSuccesses} passed`;
+  }
+
   // Human-readable explanation of the DDNS indicator, shown on hover.
   get ddnsTooltip(): string {
     const station = this.selectedStation;

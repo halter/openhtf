@@ -32,6 +32,13 @@ export enum StationStatus {
 // omits the DDNS line entirely.
 export type DdnsStatus = 'MATCH'|'MISMATCH'|'UNKNOWN';
 
+export interface LockoutUnlockProgress {
+  completedRuns: number;
+  completedSuccesses: number;
+  requiredRuns: number;
+  requiredSuccesses: number;
+}
+
 export class Station {
   cell: string|null;
   ddnsHostname: string|null;
@@ -44,6 +51,7 @@ export class Station {
   lockoutLastUpdatedBy: string|null;
   lockoutLocked: boolean|null;
   lockoutReason: string|null;
+  lockoutUnlockProgress: LockoutUnlockProgress|null;
   port: string;
   stationId: string;
   status: StationStatus;

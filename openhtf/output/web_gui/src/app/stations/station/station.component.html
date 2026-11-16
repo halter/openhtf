@@ -28,6 +28,11 @@
       {{ selectedStation.lockoutReason }}
     </div>
     <div
+      *ngIf="lockoutUnlockProgressText"
+      class="lockout-banner-progress">
+      {{ lockoutUnlockProgressText }}
+    </div>
+    <div
       *ngIf="lockoutUpdatedText"
       class="lockout-banner-meta">
       {{ lockoutUpdatedText }}

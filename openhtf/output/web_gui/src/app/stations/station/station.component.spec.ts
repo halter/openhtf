@@ -82,6 +82,7 @@ class HostComponent {
     lockoutLastUpdatedBy: null,
     lockoutLocked: null,
     lockoutReason: null,
+    lockoutUnlockProgress: null,
     port: '12000',
     stationId: 'mock-station-id',
     status: StationStatus.online,
