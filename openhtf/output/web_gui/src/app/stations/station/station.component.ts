@@ -69,6 +69,38 @@ export class StationComponent implements OnDestroy, OnInit {
     return !(this.hasError || this.isLoading);
   }
 
+  // Attribution line for the lockout banner; empty when there is nothing
+  // beyond the locked flag to show.
+  get lockoutUpdatedText(): string {
+    const station = this.selectedStation;
+    if (!station || !station.lockoutLocked) {
+      return '';
+    }
+    const by = station.lockoutLastUpdatedBy;
+    const at = station.lockoutLastUpdatedAt;
+    if (by && at) {
+      return `Locked by ${by} at ${at}`;
+    }
+    if (by) {
+      return `Locked by ${by}`;
+    }
+    if (at) {
+      return `Locked at ${at}`;
+    }
+    return '';
+  }
+
+  get lockoutUnlockProgressText(): string {
+    const station = this.selectedStation;
+    if (!station || !station.lockoutLocked || !station.lockoutUnlockProgress) {
+      return '';
+    }
+    const progress = station.lockoutUnlockProgress;
+    return `${progress.completedRuns}/${
+        progress.requiredRuns} unique collars ran, ${
+        progress.completedSuccesses}/${progress.requiredSuccesses} passed`;
+  }
+
   // Human-readable explanation of the DDNS indicator, shown on hover.
   get ddnsTooltip(): string {
     const station = this.selectedStation;

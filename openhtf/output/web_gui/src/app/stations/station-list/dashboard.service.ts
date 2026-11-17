@@ -20,7 +20,7 @@
 
 import { Injectable } from '@angular/core';
 
-import { DdnsStatus, Station, StationStatus } from '../../shared/models/station.model';
+import { DdnsStatus, LockoutUnlockProgress, Station, StationStatus } from '../../shared/models/station.model';
 import { SockJsMessage, SockJsService } from '../../shared/sock-js.service';
 import { Subscription } from '../../shared/subscription';
 import { devHost, urlHost } from '../../shared/util';
@@ -48,6 +48,21 @@ interface RawStation {
   ddns_hostname?: string|null;
   ddns_resolved_ip?: string|null;
   ddns_status?: string|null;
+  // The lockout fields are only emitted by the single-station dashboard
+  // server on Halter stations; absent elsewhere, in which case the UI shows
+  // no lockout banner.
+  lockout_locked?: boolean|null;
+  lockout_reason?: string|null;
+  lockout_last_updated_by?: string|null;
+  lockout_last_updated_at?: string|null;
+  lockout_unlock_progress?: RawLockoutUnlockProgress|null;
+}
+
+interface RawLockoutUnlockProgress {
+  required_runs: number;
+  completed_runs: number;
+  required_successes: number;
+  completed_successes: number;
 }
 
 interface DashboardApiResponse {
@@ -101,6 +116,19 @@ export class DashboardService extends Subscription {
 
     for (const hostPort of Object.keys(response)) {
       const rawStation = response[hostPort];
+      const rawProgress = rawStation.lockout_unlock_progress;
+      let lockoutUnlockProgress: LockoutUnlockProgress|null = null;
+      if (rawProgress != null && typeof rawProgress.required_runs === 'number' &&
+          typeof rawProgress.completed_runs === 'number' &&
+          typeof rawProgress.required_successes === 'number' &&
+          typeof rawProgress.completed_successes === 'number') {
+        lockoutUnlockProgress = {
+          completedRuns: rawProgress.completed_runs,
+          completedSuccesses: rawProgress.completed_successes,
+          requiredRuns: rawProgress.required_runs,
+          requiredSuccesses: rawProgress.required_successes,
+        };
+      }
       newStations[hostPort] = new Station({
         cell: rawStation.cell,
         ddnsHostname: rawStation.ddns_hostname != null ?
@@ -113,6 +141,19 @@ export class DashboardService extends Subscription {
         host: rawStation.host,
         hostPort,
         label: DashboardService.getStationLabel(rawStation),
+        lockoutLastUpdatedAt: rawStation.lockout_last_updated_at != null ?
+            rawStation.lockout_last_updated_at :
+            null,
+        lockoutLastUpdatedBy: rawStation.lockout_last_updated_by != null ?
+            rawStation.lockout_last_updated_by :
+            null,
+        lockoutLocked: typeof rawStation.lockout_locked === 'boolean' ?
+            rawStation.lockout_locked :
+            null,
+        lockoutReason: rawStation.lockout_reason != null ?
+            rawStation.lockout_reason :
+            null,
+        lockoutUnlockProgress,
         port: rawStation.port,
         stationId: rawStation.station_id,
         status: dashboardStatusMap[rawStation.status],
