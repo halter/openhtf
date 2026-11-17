@@ -48,6 +48,7 @@ interface RawStation {
   ddns_hostname?: string|null;
   ddns_resolved_ip?: string|null;
   ddns_status?: string|null;
+  incident_report_qr?: string|null;
 }
 
 interface DashboardApiResponse {
@@ -112,6 +113,7 @@ export class DashboardService extends Subscription {
         ddnsStatus: DashboardService.parseDdnsStatus(rawStation.ddns_status),
         host: rawStation.host,
         hostPort,
+        incidentReportQr: rawStation.incident_report_qr || null,
         label: DashboardService.getStationLabel(rawStation),
         port: rawStation.port,
         stationId: rawStation.station_id,

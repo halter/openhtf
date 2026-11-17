@@ -19,6 +19,7 @@
  */
 
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 import { ConfigService } from '../../core/config.service';
 import { Station } from '../../shared/models/station.model';
@@ -42,9 +43,17 @@ export class StationComponent implements OnDestroy, OnInit {
   @Output() onDeselectStation = new EventEmitter<StationDeselectedEvent>();
 
   selectedTest: TestState|null = null;  // Selected in the history.
+  showIncidentQr = false;
 
   constructor(
-      private stationService: StationService, private config: ConfigService) {}
+      private stationService: StationService, private config: ConfigService,
+      private sanitizer: DomSanitizer) {}
+
+  // Angular strips data: image URLs bound to [src] unless they are marked safe;
+  // the QR comes from the station's own server.
+  get incidentQrSource(): SafeUrl {
+    return this.sanitizer.bypassSecurityTrustUrl(this.selectedStation.incidentReportQr);
+  }
 
   get activeTest(): TestState|null {
     if (this.selectedTest !== null) {

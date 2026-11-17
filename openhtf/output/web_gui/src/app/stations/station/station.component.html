@@ -26,6 +26,14 @@
     </button>
     <div class="u-flex-grow"></div>
     <button
+      *ngIf="selectedStation.incidentReportQr"
+      (click)="showIncidentQr = true"
+      type="button"
+      class="htf-link-button">
+      แจ้งปัญหา · Report a problem
+    </button>
+    <div *ngIf="selectedStation.incidentReportQr" style="width: 10px;"></div>
+    <button
       (click)="cancelTest()"
       type="button"
       class="htf-link-button">
@@ -45,6 +53,18 @@
       class="htf-link-button">
       Refresh station
     </button>
+  </div>
+
+  <div
+    *ngIf="showIncidentQr && selectedStation.incidentReportQr"
+    class="incident-qr-overlay"
+    (click)="showIncidentQr = false">
+    <div class="incident-qr-card">
+      <img class="incident-qr-image" [src]="incidentQrSource" alt="">
+      <div class="incident-qr-station">{{ selectedStation.stationId }}</div>
+      <div>สแกนเพื่อรายงานข้อขัดข้อง · Scan to report a fault</div>
+      <div class="htf-support-text">แตะเพื่อปิด · Tap to close</div>
+    </div>
   </div>
 
   <div class="status-bar">
