@@ -287,6 +287,24 @@ input[type='text'] {
   .htf-status-indicator.ng-status-warning {
     background: rgba(255, 229, 77, 0.18);
     color: #e6c400; }
+  .htf-status-indicator.ng-label-red {
+    background: #ff5d4e;
+    color: #fff; }
+  .htf-status-indicator.ng-label-orange {
+    background: #ff9f1a;
+    color: #fff; }
+  .htf-status-indicator.ng-label-yellow {
+    background: #ffe54d;
+    color: #323232; }
+  .htf-status-indicator.ng-label-blue {
+    background: #07f;
+    color: #fff; }
+  .htf-status-indicator.ng-label-grey {
+    background: #323232;
+    color: #fff; }
+  .htf-status-indicator.ng-label-purple {
+    background: #9b59ff;
+    color: #fff; }
 
 .ng-tooltip-host {
   position: relative;
@@ -917,4 +935,4 @@ template {
 .u-text-color-error {
   color: #ff5d4e; }
 
-/*# sourceMappingURL=app.484afc414039aa2e5ab9.css.map*/
+/*# sourceMappingURL=app.22a3abb0dd6c377e0a52.css.map*/

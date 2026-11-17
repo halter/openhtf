@@ -121,6 +121,13 @@
     background: rgba($theme-yellow, .18);
     color: darken($theme-yellow, 20%);
   }
+
+  &.ng-label-red { background: $theme-red; color: $theme-white; }
+  &.ng-label-orange { background: $theme-orange; color: $theme-white; }
+  &.ng-label-yellow { background: $theme-yellow; color: $theme-dark-grey; }
+  &.ng-label-blue { background: $theme-blue; color: $theme-white; }
+  &.ng-label-grey { background: $theme-dark-grey; color: $theme-white; }
+  &.ng-label-purple { background: $theme-purple; color: $theme-white; }
 }
 
 .ng-tooltip-host {
