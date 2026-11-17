@@ -67,7 +67,6 @@ export class TestState {
   // Generic, optional label shown in the results/history panel (e.g. ICT 6up slot
   // number). Null when the test plan didn't set metadata['label'].
   label: string|null;
-  // Replaces the Pass text of a passed test when the plan sets metadata['status_label'].
   statusLabel: string|null;
   statusLabelColor: string|null;
   logs: LogRecord[];
