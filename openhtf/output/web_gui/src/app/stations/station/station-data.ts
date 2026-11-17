@@ -99,7 +99,7 @@ export interface RawMetadata {
   status_label_color?: string;
 }
 
-const statusLabelColors = ['red', 'orange', 'yellow', 'blue', 'grey', 'purple'];
+const statusLabelColors = ['red', 'orange', 'yellow', 'green', 'blue', 'grey', 'purple'];
 
 export interface RawPhase {
   attachments: {[name: string]: RawAttachment};

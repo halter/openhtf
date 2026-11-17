@@ -122,12 +122,14 @@
     color: darken($theme-yellow, 20%);
   }
 
-  &.ng-label-red { background: $theme-red; color: $theme-white; }
-  &.ng-label-orange { background: $theme-orange; color: $theme-white; }
-  &.ng-label-yellow { background: $theme-yellow; color: $theme-dark-grey; }
-  &.ng-label-blue { background: $theme-blue; color: $theme-white; }
-  &.ng-label-grey { background: $theme-dark-grey; color: $theme-white; }
-  &.ng-label-purple { background: $theme-purple; color: $theme-white; }
+  // Chakra UI 500 shades, so a label matches FarmHand's solid badges.
+  &.ng-label-red { background: #e53e3e; color: $theme-white; }
+  &.ng-label-orange { background: #dd6b20; color: $theme-white; }
+  &.ng-label-yellow { background: #d69e2e; color: $theme-white; }
+  &.ng-label-green { background: #38a169; color: $theme-white; }
+  &.ng-label-blue { background: #3182ce; color: $theme-white; }
+  &.ng-label-grey { background: #718096; color: $theme-white; }
+  &.ng-label-purple { background: #805ad5; color: $theme-white; }
 }
 
 .ng-tooltip-host {

@@ -288,22 +288,25 @@ input[type='text'] {
     background: rgba(255, 229, 77, 0.18);
     color: #e6c400; }
   .htf-status-indicator.ng-label-red {
-    background: #ff5d4e;
+    background: #e53e3e;
     color: #fff; }
   .htf-status-indicator.ng-label-orange {
-    background: #ff9f1a;
+    background: #dd6b20;
     color: #fff; }
   .htf-status-indicator.ng-label-yellow {
-    background: #ffe54d;
-    color: #323232; }
+    background: #d69e2e;
+    color: #fff; }
+  .htf-status-indicator.ng-label-green {
+    background: #38a169;
+    color: #fff; }
   .htf-status-indicator.ng-label-blue {
-    background: #07f;
+    background: #3182ce;
     color: #fff; }
   .htf-status-indicator.ng-label-grey {
-    background: #323232;
+    background: #718096;
     color: #fff; }
   .htf-status-indicator.ng-label-purple {
-    background: #9b59ff;
+    background: #805ad5;
     color: #fff; }
 
 .ng-tooltip-host {
@@ -935,4 +938,4 @@ template {
 .u-text-color-error {
   color: #ff5d4e; }
 
-/*# sourceMappingURL=app.22a3abb0dd6c377e0a52.css.map*/
+/*# sourceMappingURL=app.26b4fed7346c38911c77.css.map*/
