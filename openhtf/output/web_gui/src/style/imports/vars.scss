@@ -32,6 +32,17 @@ $theme-green: #00e89d;
 $theme-red: #ff5d4e;
 $theme-white: #fff;
 $theme-yellow: #ffe54d;
+
+// Chakra UI 500 shades, so a plan-set label matches FarmHand's solid badges.
+$label-colors: (
+  red: #e53e3e,
+  orange: #dd6b20,
+  yellow: #d69e2e,
+  green: #38a169,
+  blue: #3182ce,
+  grey: #718096,
+  purple: #805ad5,
+);
 $tooltip-background: rgba(0, 0, 0, .7);
 
 // Font sizes.

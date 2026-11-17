@@ -122,14 +122,24 @@
     color: darken($theme-yellow, 20%);
   }
 
-  // Chakra UI 500 shades, so a label matches FarmHand's solid badges.
-  &.ng-label-red { background: #e53e3e; color: $theme-white; }
-  &.ng-label-orange { background: #dd6b20; color: $theme-white; }
-  &.ng-label-yellow { background: #d69e2e; color: $theme-white; }
-  &.ng-label-green { background: #38a169; color: $theme-white; }
-  &.ng-label-blue { background: #3182ce; color: $theme-white; }
-  &.ng-label-grey { background: #718096; color: $theme-white; }
-  &.ng-label-purple { background: #805ad5; color: $theme-white; }
+  @each $name, $color in $label-colors {
+    &.ng-label-#{$name} { background: $color; color: $theme-white; }
+  }
+}
+
+// Classes a plan can use in prompt HTML, which the sanitiser strips of inline styles.
+@each $name, $color in $label-colors {
+  .htf-label-#{$name} { background: $color; color: $theme-white; }
+}
+
+.htf-label-banner {
+  border-radius: 4px;
+  font-size: 72px;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: $widget-inner-padding;
+  padding: 16px;
+  text-align: center;
 }
 
 .ng-tooltip-host {
