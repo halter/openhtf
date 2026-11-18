@@ -131,14 +131,7 @@ export class DashboardService extends Subscription {
     const reportedHostPorts = new Set<string>();
     for (const hostPort of Object.keys(newStations)) {
       const newStation = newStations[hostPort];
-      // A station whose IP changed keeps its entry, so the selected station
-      // object follows it.
-      const knownHostPort = hostPort in this.stations ?
-          hostPort :
-          Object.keys(this.stations)
-              .find(
-                  known => this.stations[known].stationId ===
-                      newStation.stationId);
+      const knownHostPort = this.findKnownHostPort(hostPort, newStation);
       if (knownHostPort !== undefined) {
         const knownStation = this.stations[knownHostPort];
         // If a test is not currently running on the station, preserve the
@@ -165,6 +158,14 @@ export class DashboardService extends Subscription {
         delete this.stations[hostPort];
       }
     }
+  }
+
+  private findKnownHostPort(hostPort: string, newStation: Station) {
+    if (hostPort in this.stations) {
+      return hostPort;
+    }
+    return Object.keys(this.stations)
+        .find(known => this.stations[known].stationId === newStation.stationId);
   }
 
   /**
