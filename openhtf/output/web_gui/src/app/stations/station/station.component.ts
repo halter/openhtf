@@ -23,6 +23,7 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angu
 import { ConfigService } from '../../core/config.service';
 import { Station } from '../../shared/models/station.model';
 import { TestState } from '../../shared/models/test-state.model';
+import { localhostAddress } from '../../shared/util';
 
 import { StationService } from './station.service';
 
@@ -67,6 +68,10 @@ export class StationComponent implements OnDestroy, OnInit {
 
   get isOnline() {
     return !(this.hasError || this.isLoading);
+  }
+
+  get hasNetwork() {
+    return this.selectedStation.host !== localhostAddress;
   }
 
   // Human-readable explanation of the DDNS indicator, shown on hover.

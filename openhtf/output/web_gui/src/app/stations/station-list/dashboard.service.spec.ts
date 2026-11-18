@@ -96,4 +96,35 @@ describe('dashboard service', () => {
        expect(stations['localhost:12001'].status)
            .toEqual(StationStatus.unreachable);
      }));
+
+  it('should keep a station entry when its IP changes', fakeAsync(() => {
+       const stations: StationMap = dashboardService.stations;
+       dashboardService.subscribe();
+
+       connectSuccessfully();
+       receiveMockMessage({
+         '10.4.18.21:4444': {
+           host: '10.4.18.21',
+           port: '4444',
+           station_id: 'p5-fa-enter-cooling-cct-08-01',
+           status: 'ONLINE',
+         },
+       });
+       tick();
+       const selectedStation = stations['10.4.18.21:4444'];
+
+       receiveMockMessage({
+         '127.0.0.1:4444': {
+           host: '127.0.0.1',
+           port: '4444',
+           station_id: 'p5-fa-enter-cooling-cct-08-01',
+           status: 'ONLINE',
+         },
+       });
+       tick();
+
+       expect(Object.keys(stations)).toEqual(['10.4.18.21:4444']);
+       expect(stations['10.4.18.21:4444']).toBe(selectedStation);
+       expect(selectedStation.host).toEqual('127.0.0.1');
+     }));
 });

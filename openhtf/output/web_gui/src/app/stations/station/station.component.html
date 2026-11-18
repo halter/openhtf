@@ -51,7 +51,8 @@
     <div class="status-bar-row u-font-size-large">
       <div>{{ selectedStation.label }}</div>
       <div class="u-flex-grow"></div>
-      <span *ngIf="isOnline">Status: Connected</span>
+      <span *ngIf="isOnline && hasNetwork">Status: Connected</span>
+      <span *ngIf="isOnline && !hasNetwork" class="u-text-color-error">Status: Not connected</span>
       <span *ngIf="!isOnline" class="u-text-color-error">Status: Offline</span>
     </div>
     <div class="status-bar-row u-text-color-deemphasize">

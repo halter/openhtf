@@ -128,30 +128,44 @@ export class DashboardService extends Subscription {
    * Step 3: Update our data store with new station information.
    */
   private applyResponse(newStations: StationMap) {
+    const reportedHostPorts = new Set<string>();
     for (const hostPort of Object.keys(newStations)) {
       const newStation = newStations[hostPort];
-      if (hostPort in this.stations) {
+      const knownHostPort = this.findKnownHostPort(hostPort, newStation);
+      if (knownHostPort !== undefined) {
+        const knownStation = this.stations[knownHostPort];
         // If a test is not currently running on the station, preserve the
         // information from the seen test.
         if (newStation.cell === null && newStation.testDescription === null &&
             newStation.testName === null) {
-          newStation.cell = this.stations[hostPort].cell;
-          newStation.label = this.stations[hostPort].label;
-          newStation.testDescription = this.stations[hostPort].testDescription;
-          newStation.testName = this.stations[hostPort].testName;
+          newStation.cell = knownStation.cell;
+          newStation.label = knownStation.label;
+          newStation.testDescription = knownStation.testDescription;
+          newStation.testName = knownStation.testName;
         }
-        Object.assign(this.stations[hostPort], newStation);
+        newStation.hostPort = knownHostPort;
+        Object.assign(knownStation, newStation);
+        reportedHostPorts.add(knownHostPort);
       } else {
         this.stations[hostPort] = newStation;
+        reportedHostPorts.add(hostPort);
       }
     }
 
     // Remove stations no longer reported by the server.
     for (const hostPort of Object.keys(this.stations)) {
-      if (!(hostPort in newStations)) {
+      if (!reportedHostPorts.has(hostPort)) {
         delete this.stations[hostPort];
       }
     }
+  }
+
+  private findKnownHostPort(hostPort: string, newStation: Station) {
+    if (hostPort in this.stations) {
+      return hostPort;
+    }
+    return Object.keys(this.stations)
+        .find(known => this.stations[known].stationId === newStation.stationId);
   }
 
   /**

@@ -33,7 +33,7 @@ if (process.env.ENV !== 'build') {
 }
 
 export const urlHost = window.location.host.split(':')[0];
-const localhostAddress = '127.0.0.1';
+export const localhostAddress = '127.0.0.1';
 
 export function getStationBaseUrl(dashboardEnabled: boolean, station: Station) {
   if (dashboardEnabled) {
