@@ -31,6 +31,8 @@ export class StationDeselectedEvent {}
 const subscriptionRetryMs = 200;
 const subscriptionRetryBackoff = 1.08;
 const subscriptionRetryMax = 1500;
+// The station server reports this host when the machine has no outbound route.
+const noRouteHost = '127.0.0.1';
 
 @Component({
   selector: 'htf-station',
@@ -67,6 +69,10 @@ export class StationComponent implements OnDestroy, OnInit {
 
   get isOnline() {
     return !(this.hasError || this.isLoading);
+  }
+
+  get hasNetwork() {
+    return this.selectedStation.host !== noRouteHost;
   }
 
   // Human-readable explanation of the DDNS indicator, shown on hover.

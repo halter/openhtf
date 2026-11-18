@@ -164,6 +164,13 @@ describe('station component', () => {
             jasmine.any(Number));
   });
 
+  it('should indicate when the station has no network', () => {
+    hostComponent.station.host = '127.0.0.1';
+    fixture.detectChanges();
+    expect(element.textContent).toContain('Status: Not connected');
+    expect(element.textContent).not.toContain('Status: Connected');
+  });
+
   it('should render widgets and pass the active test to them', () => {
     mockStationService.test = mockActiveTest;
     fixture.detectChanges();
