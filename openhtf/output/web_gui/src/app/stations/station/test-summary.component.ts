@@ -53,6 +53,11 @@ const PANEL_LABELS: {[lang in FaultPanelLanguage]: {[key: string]: string}} = {
     header: 'TEST FAILED — ACTION REQUIRED',
     headerDutFail: 'TEST FAILED — UNIT DID NOT MEET SPEC',
     whatToDo: 'What to do',
+    escalateHint: `Steps didn't fix it? This raises an incident with the on-call team.`,
+    escalateSending: 'Reporting…',
+    escalateSent: '✓ Issue reported',
+    escalateError: `✕ Couldn't report — tap to retry`,
+    escalateIdle: 'Report Issue',
     supportQrHint: `Steps above didn't fix it? Ask an engineer to scan Halter's support QR code (Report a problem, top of the screen).`,
     unexpectedError: 'Unexpected error',
     unexpectedHint: `This isn't a known fault. Let Halter know so engineering can add a fix.`,
@@ -66,6 +71,11 @@ const PANEL_LABELS: {[lang in FaultPanelLanguage]: {[key: string]: string}} = {
     header: 'การทดสอบล้มเหลว — ต้องดำเนินการ',
     headerDutFail: 'การทดสอบล้มเหลว — ชิ้นงานไม่ผ่านเกณฑ์',
     whatToDo: 'สิ่งที่ต้องทำ',
+    escalateHint: 'ทำตามขั้นตอนแล้วยังไม่หาย? ปุ่มนี้จะแจ้งเหตุไปยังทีมออนคอล',
+    escalateSending: 'กำลังรายงาน…',
+    escalateSent: '✓ รายงานแล้ว',
+    escalateError: '✕ รายงานไม่สำเร็จ — แตะเพื่อลองใหม่',
+    escalateIdle: 'รายงานปัญหา',
     supportQrHint: 'ทำตามขั้นตอนด้านบนแล้วยังไม่หาย? ให้วิศวกรสแกนคิวอาร์โค้ดแจ้งปัญหาของ Halter (ปุ่ม แจ้งปัญหา ด้านบนของหน้าจอ)',
     unexpectedError: 'ข้อผิดพลาดที่ไม่รู้จัก',
     unexpectedHint: 'ไม่ใช่ข้อผิดพลาดที่รู้จัก แจ้ง Halter เพื่อให้วิศวกรเพิ่มวิธีแก้ไข',
@@ -84,6 +94,8 @@ const PANEL_LABELS: {[lang in FaultPanelLanguage]: {[key: string]: string}} = {
 })
 export class TestSummaryComponent implements OnChanges {
   @Input() test: TestState;
+  // The station escalates through its incident report QR, so the panel offers no Report Issue button.
+  @Input() hasIncidentQr = false;
   @ViewChild(ProgressBarComponent) progressBar: ProgressBarComponent;
 
   // Expose the enum to the template.
@@ -98,8 +110,10 @@ export class TestSummaryComponent implements OnChanges {
   // OutcomeDetail object: the station data is re-polled periodically and
   // makeTest rebuilds fresh OutcomeDetail instances each time, so an
   // object-keyed map would lose the spinner/sent/error state on the next poll
-  // (the button would visibly revert).
+  // (the button would visibly revert). Two independent maps: one per action
+  // (report an unknown fault vs escalate a known fault whose steps didn't help).
   private reportStatuses = new Map<string, ReportStatus>();
+  private escalateStatuses = new Map<string, ReportStatus>();
 
   constructor(
       private http: Http,
@@ -141,7 +155,7 @@ export class TestSummaryComponent implements OnChanges {
     });
   }
 
-  // Whether any detail on this panel can be notified. Header wording only.
+  // Whether any detail on this panel can be notified/escalated. Header wording only.
   get anyNotifiable(): boolean {
     return !!(this.test && this.test.outcomeDetails &&
               this.test.outcomeDetails.some(detail => detail.notifiable));
@@ -191,9 +205,17 @@ export class TestSummaryComponent implements OnChanges {
     return this.reportStatuses.get(this.detailKey(detail)) || ReportStatus.idle;
   }
 
+  escalateStatus(detail: OutcomeDetail): ReportStatus {
+    return this.escalateStatuses.get(this.detailKey(detail)) || ReportStatus.idle;
+  }
+
   /** A button is clickable only when nothing is in flight / already sent. */
   canReport(detail: OutcomeDetail): boolean {
     return this._isClickable(this.reportStatus(detail));
+  }
+
+  canEscalate(detail: OutcomeDetail): boolean {
+    return this._isClickable(this.escalateStatus(detail));
   }
 
   /**
@@ -205,12 +227,21 @@ export class TestSummaryComponent implements OnChanges {
     this._submitFault(detail, '/fault-report', this.reportStatuses);
   }
 
+  /**
+   * Escalate a KNOWN fault whose remediation steps did not resolve it. Distinct
+   * from reportFault: this goes to the /fault-escalate relay, which raises a
+   * higher-priority alert (a PagerDuty incident) rather than a routine report.
+   */
+  escalateFault(detail: OutcomeDetail) {
+    this._submitFault(detail, '/fault-escalate', this.escalateStatuses);
+  }
+
   private _isClickable(status: ReportStatus): boolean {
     return status === ReportStatus.idle || status === ReportStatus.error;
   }
 
   /**
-   * Submit a fault report. While the request is in flight
+   * Shared submit for both report and escalate. While the request is in flight
    * the button shows a spinner and is disabled; the result (sent / error) is
    * shown inline so the operator stops clicking. On error the button re-enables
    * so they can retry.

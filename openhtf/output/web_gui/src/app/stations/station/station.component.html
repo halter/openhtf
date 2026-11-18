@@ -118,7 +118,7 @@
           </div>
         </div>
 
-        <htf-test-summary [test]="activeTest"></htf-test-summary>
+        <htf-test-summary [test]="activeTest" [hasIncidentQr]="!!selectedStation.incidentReportQr"></htf-test-summary>
         <htf-logs [test]="activeTest"></htf-logs>
         <htf-attachments [test]="activeTest"></htf-attachments>
         <htf-phase-list [test]="activeTest"></htf-phase-list>
