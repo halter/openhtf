@@ -40,6 +40,32 @@
   font-weight: bold;
 }
 
+.incident-qr-overlay {
+  align-items: center;
+  background: rgba(0, 0, 0, .6);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 100;
+}
+
+.incident-qr-card {
+  background: $theme-white;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+}
+
+.incident-qr-station {
+  font-size: $font-size-large;
+  font-weight: bold;
+  margin: 8px 0;
+}
+
 .past-test-warning {
   color: $theme-red;
 

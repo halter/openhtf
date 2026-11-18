@@ -84,44 +84,13 @@
   margin: 4px 0 8px;
 }
 
-// Escalation block under the remediation steps: shown when the steps didn't
-// fix it, so the operator can page Halter. Separated from the steps with a
-// hairline so it reads as a distinct, last-resort action.
-.operator-fault-escalate {
-  align-items: flex-start;
-  border-top: 1px dashed $border-light-grey;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 10px;
-}
-
-.operator-fault-escalate-hint {
-  font-size: 13px;
-}
-
 // Submit buttons: hold the label next to a spinner while in flight, then turn
 // green (sent) or red (error) so the operator gets an unambiguous result and
-// stops clicking. Two variants:
-//   - report (grey, htf-rounded-button-grey): informational — flags an uncaught
-//     error to engineering (Slack). Low-key.
-//   - escalate (red, htf-rounded-button-red + .operator-fault-escalate-button):
-//     raises a production incident (PagerDuty + on-call). Made bold + a light
-//     spinner so it reads as the serious, last-resort action.
+// stops clicking.
 .operator-fault-report-button {
   align-items: center;
   display: inline-flex;
   gap: 8px;
-}
-
-.operator-fault-escalate-button {
-  font-weight: bold;
-
-  .operator-fault-spinner {
-    border-color: rgba($theme-white, .45);
-    border-top-color: $theme-white;
-  }
 }
 
 .operator-fault-report-sent {
