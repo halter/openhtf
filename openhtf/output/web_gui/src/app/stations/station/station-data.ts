@@ -92,7 +92,14 @@ export interface RawLogRecord {
   timestamp_millis: number;
 }
 
-export interface RawMetadata { test_name: string; label?: string; }
+export interface RawMetadata {
+  test_name: string;
+  label?: string;
+  status_label?: string;
+  status_label_color?: string;
+}
+
+const statusLabelColors = ['red', 'orange', 'yellow', 'green', 'blue', 'grey', 'purple'];
 
 export interface RawPhase {
   attachments: {[name: string]: RawAttachment};
@@ -199,6 +206,14 @@ export function makeTest(
             };
           });
 
+  const metadata = rawState.test_record.metadata;
+  const statusLabel =
+      status === TestStatus.pass ? metadata.status_label || null : null;
+  const statusLabelColor = statusLabel &&
+          statusLabelColors.indexOf(metadata.status_label_color) !== -1 ?
+      metadata.status_label_color :
+      null;
+
   return new TestState({
     attachments,
     dutId: rawState.test_record.dut_id,
@@ -210,6 +225,8 @@ export function makeTest(
     // by test plans via test_record.metadata['label'] (e.g. the ICT 6up slot number);
     // null for tests that don't set it, so their rows render unchanged.
     label: rawState.test_record.metadata.label || null,
+    statusLabel,
+    statusLabelColor,
     outcomeDetails,
     phases,
     plugDescriptors: rawState.plugs.plug_descriptors,

@@ -65,8 +65,8 @@
           <div
             *ngSwitchCase="HistoryItemStatus.loaded"
             class="htf-status-indicator"
-            [ngClass]="historyItem.testState.status | statusToClass">
-            {{ historyItem.testState.status | statusToText }}
+            [ngClass]="historyItem.testState.statusLabelColor ? 'ng-label-' + historyItem.testState.statusLabelColor : (historyItem.testState.status | statusToClass)">
+            {{ historyItem.testState.statusLabel || (historyItem.testState.status | statusToText) }}
           </div>
         </div>
       </li>

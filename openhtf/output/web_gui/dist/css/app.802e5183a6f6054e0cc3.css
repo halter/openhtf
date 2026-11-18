@@ -287,6 +287,64 @@ input[type='text'] {
   .htf-status-indicator.ng-status-warning {
     background: rgba(255, 229, 77, 0.18);
     color: #e6c400; }
+  .htf-status-indicator.ng-label-red {
+    background: #e53e3e;
+    color: #fff; }
+  .htf-status-indicator.ng-label-orange {
+    background: #dd6b20;
+    color: #fff; }
+  .htf-status-indicator.ng-label-yellow {
+    background: #d69e2e;
+    color: #fff; }
+  .htf-status-indicator.ng-label-green {
+    background: #38a169;
+    color: #fff; }
+  .htf-status-indicator.ng-label-blue {
+    background: #3182ce;
+    color: #fff; }
+  .htf-status-indicator.ng-label-grey {
+    background: #718096;
+    color: #fff; }
+  .htf-status-indicator.ng-label-purple {
+    background: #805ad5;
+    color: #fff; }
+
+.htf-label-red {
+  background: #e53e3e;
+  color: #fff; }
+
+.htf-label-orange {
+  background: #dd6b20;
+  color: #fff; }
+
+.htf-label-yellow {
+  background: #d69e2e;
+  color: #fff; }
+
+.htf-label-green {
+  background: #38a169;
+  color: #fff; }
+
+.htf-label-blue {
+  background: #3182ce;
+  color: #fff; }
+
+.htf-label-grey {
+  background: #718096;
+  color: #fff; }
+
+.htf-label-purple {
+  background: #805ad5;
+  color: #fff; }
+
+.htf-label-banner {
+  border-radius: 4px;
+  font-size: 72px;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 15px;
+  padding: 16px;
+  text-align: center; }
 
 .ng-tooltip-host {
   position: relative;
@@ -917,4 +975,4 @@ template {
 .u-text-color-error {
   color: #ff5d4e; }
 
-/*# sourceMappingURL=app.122d762de9d5330635a3.css.map*/
+/*# sourceMappingURL=app.802e5183a6f6054e0cc3.css.map*/

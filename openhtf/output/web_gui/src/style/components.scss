@@ -121,6 +121,25 @@
     background: rgba($theme-yellow, .18);
     color: darken($theme-yellow, 20%);
   }
+
+  @each $name, $color in $label-colors {
+    &.ng-label-#{$name} { background: $color; color: $theme-white; }
+  }
+}
+
+// Classes a plan can use in prompt HTML, which the sanitiser strips of inline styles.
+@each $name, $color in $label-colors {
+  .htf-label-#{$name} { background: $color; color: $theme-white; }
+}
+
+.htf-label-banner {
+  border-radius: 4px;
+  font-size: 72px;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: $widget-inner-padding;
+  padding: 16px;
+  text-align: center;
 }
 
 .ng-tooltip-host {

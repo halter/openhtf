@@ -143,8 +143,8 @@
     <div class="u-flex-grow"></div>
     <div
       class="htf-status-indicator"
-      [ngClass]="test.status | statusToClass">
-      {{ test.status | statusToText }}
+      [ngClass]="test.statusLabelColor ? 'ng-label-' + test.statusLabelColor : (test.status | statusToClass)">
+      {{ test.statusLabel || (test.status | statusToText) }}
     </div>
   </div>
 
