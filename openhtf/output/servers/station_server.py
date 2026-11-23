@@ -538,6 +538,35 @@ class FaultReportHandler(web_gui_server.CorsRequestHandler):
     self.finish({'status': 'reported'})
 
 
+_FAULT_ESCALATE_HANDLER = None
+
+
+def set_fault_escalate_handler(handler):
+  """Register the callable invoked with the fault-escalate payload."""
+  global _FAULT_ESCALATE_HANDLER
+  _FAULT_ESCALATE_HANDLER = handler
+
+
+class FaultEscalateHandler(web_gui_server.CorsRequestHandler):
+  """POST endpoint for escalating a known fault; same contract as FaultReportHandler."""
+
+  def post(self):
+    handler = _FAULT_ESCALATE_HANDLER
+    if handler is None:
+      self.set_status(501)
+      self.finish({'error': 'fault escalation is not configured on this station'})
+      return
+    try:
+      payload = json.loads(self.request.body)
+    except (ValueError, TypeError):
+      self.set_status(400)
+      self.finish({'error': 'invalid JSON body'})
+      return
+    threading.Thread(target=handler, args=(payload,), daemon=True).start()
+    self.set_status(202)
+    self.finish({'status': 'escalated'})
+
+
 class AttachmentsHandler(BaseTestHandler):
   """GET endpoint for a file attached to a test."""
 
@@ -834,6 +863,7 @@ class StationServer(web_gui_server.WebGuiServer):
          'attachments/(?P<attachment_name>.+)', AttachmentsHandler),
         (r'/commands/(?P<command>.+)', CommandHandler),
         (r'/fault-report', FaultReportHandler),
+        (r'/fault-escalate', FaultEscalateHandler),
     ))
 
     # Optionally enable history from disk.
