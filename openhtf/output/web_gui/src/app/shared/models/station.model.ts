@@ -39,6 +39,9 @@ export class Station {
   ddnsStatus: DdnsStatus|null;
   host: string;
   hostPort: string;  // Used to uniquely identify stations.
+  // QR code (an image data URI) that opens the factory incident report form for
+  // this station. Null when the server sends none.
+  incidentReportQr: string|null;
   label: string;
   port: string;
   stationId: string;

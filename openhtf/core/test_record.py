@@ -55,7 +55,7 @@ class OutcomeDetails(object):
   # language toggle. Not meant for downstream consumers: the JSON report output
   # strips it before shipping.
   description_th = attr.ib(type=Optional[Text], default=None)
-  # False means the station GUI shows the message and offers no notify/escalate
+  # False means the station GUI shows the message and offers no notify
   # button. GUI-only, like description_th: the JSON report output strips it.
   notifiable = attr.ib(type=bool, default=True)
   # The catalogue entry that supplied this detail's remediation text, when that is
@@ -233,7 +233,7 @@ class TestRecord(object):
       description: A string providing more details about the outcome code.
       description_th: Optional Thai translation of description, shown by the
         station GUI's language toggle (stripped from shipped JSON reports).
-      notifiable: Whether the station GUI offers a notify/escalate button for
+      notifiable: Whether the station GUI offers a notify button for
         this detail. False shows the message only (stripped from shipped JSON
         reports).
       catalogue_code: The catalogue entry the remediation text came from, when it

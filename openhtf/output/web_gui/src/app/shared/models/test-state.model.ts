@@ -50,7 +50,7 @@ export interface OutcomeDetail {
   // panel's language toggle then falls back to English.
   issueTh: string;
   whatToDoTh: string;
-  // False shows the message with no notify/escalate button. Absent on older
+  // False shows the message with no notify button. Absent on older
   // records — treated as true.
   notifiable: boolean;
   // The catalogue entry the remediation text came from, when it differs from

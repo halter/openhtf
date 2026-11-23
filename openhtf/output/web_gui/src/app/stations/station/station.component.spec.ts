@@ -77,6 +77,7 @@ class HostComponent {
     ddnsStatus: null,
     host: 'localhost',
     hostPort: 'localhost:12000',
+    incidentReportQr: null,
     label: 'mock-station-id',
     port: '12000',
     stationId: 'mock-station-id',
@@ -170,6 +171,26 @@ describe('station component', () => {
     for (const selector of testWidgets) {
       expect(element.textContent).toContain(`${selector}(active-dut-id)`);
     }
+  });
+
+  it('should hide the incident report button when the station sends no QR', () => {
+    expect(element.textContent).not.toContain('Report a problem');
+  });
+
+  it('should show the station QR from the incident report button', () => {
+    hostComponent.station.incidentReportQr = 'data:image/svg+xml;base64,PHN2Zy8+';
+    fixture.detectChanges();
+    expect(element.querySelector('.incident-qr-image')).toBeNull();
+
+    const button = Array.from(element.querySelectorAll('button'))
+                       .find(b => b.textContent.includes('Report a problem'));
+    button.click();
+    fixture.detectChanges();
+    expect(element.querySelector('.incident-qr-image')).not.toBeNull();
+
+    (element.querySelector('.incident-qr-overlay') as HTMLElement).click();
+    fixture.detectChanges();
+    expect(element.querySelector('.incident-qr-image')).toBeNull();
   });
 
   it('should unsubscribe when the component is destroyed', () => {

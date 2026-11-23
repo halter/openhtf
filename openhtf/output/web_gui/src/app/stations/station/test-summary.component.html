@@ -59,38 +59,11 @@
     <div *ngIf="detail.whatToDo" class="operator-fault-action">
       <div class="operator-fault-action-label">{{ label('whatToDo') }}</div>
       <pre class="operator-fault-action-body">{{ whatToDoText(detail) }}</pre>
-      <!-- Escalation: the steps above didn't resolve it, so let the operator
-           alert Halter (a higher-priority page, distinct from a routine
-           report). Same spinner + good/fail feedback as the report button.
-           Suppressed on a non-notifiable detail: a DUT that failed a
-           measurement is yield loss, and paging on it buries the real faults. -->
-      <div class="operator-fault-escalate" *ngIf="detail.notifiable">
-        <span class="operator-fault-escalate-hint">
-          {{ label('escalateHint') }}
-        </span>
-        <button
-          type="button"
-          class="htf-rounded-button-red operator-fault-report-button operator-fault-escalate-button"
-          [class.operator-fault-report-sent]="escalateStatus(detail) === ReportStatus.sent"
-          [class.operator-fault-report-error]="escalateStatus(detail) === ReportStatus.error"
-          [disabled]="!canEscalate(detail)"
-          (click)="escalateFault(detail)">
-          <span
-            *ngIf="escalateStatus(detail) === ReportStatus.sending"
-            class="operator-fault-spinner"></span>
-          <span [ngSwitch]="escalateStatus(detail)">
-            <span *ngSwitchCase="ReportStatus.sending">{{ label('escalateSending') }}</span>
-            <span *ngSwitchCase="ReportStatus.sent">{{ label('escalateSent') }}</span>
-            <span *ngSwitchCase="ReportStatus.error">{{ label('escalateError') }}</span>
-            <span *ngSwitchDefault>{{ label('escalateIdle') }}</span>
-          </span>
-        </button>
-      </div>
+      <div *ngIf="detail.notifiable" class="operator-fault-action-hint">{{ label('supportQrHint') }}</div>
     </div>
     <!-- No known remediation: let the operator flag the uncaught error so
          engineering can add a fault code. Informational — not a production
-         incident, so it stays a low-key grey button (contrast the red escalate
-         button above). -->
+         incident, so it stays a low-key grey button. -->
     <div *ngIf="!detail.whatToDo && detail.notifiable" class="operator-fault-action">
       <div class="operator-fault-action-label">{{ label('unexpectedError') }}</div>
       <div class="operator-fault-action-hint">
