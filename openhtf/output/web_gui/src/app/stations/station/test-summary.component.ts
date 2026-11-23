@@ -94,7 +94,6 @@ const PANEL_LABELS: {[lang in FaultPanelLanguage]: {[key: string]: string}} = {
 })
 export class TestSummaryComponent implements OnChanges {
   @Input() test: TestState;
-  // The station escalates through its incident report QR, so the panel offers no Report Issue button.
   @Input() hasIncidentQr = false;
   @ViewChild(ProgressBarComponent) progressBar: ProgressBarComponent;
 
@@ -110,8 +109,7 @@ export class TestSummaryComponent implements OnChanges {
   // OutcomeDetail object: the station data is re-polled periodically and
   // makeTest rebuilds fresh OutcomeDetail instances each time, so an
   // object-keyed map would lose the spinner/sent/error state on the next poll
-  // (the button would visibly revert). Two independent maps: one per action
-  // (report an unknown fault vs escalate a known fault whose steps didn't help).
+  // (the button would visibly revert).
   private reportStatuses = new Map<string, ReportStatus>();
   private escalateStatuses = new Map<string, ReportStatus>();
 
@@ -155,7 +153,7 @@ export class TestSummaryComponent implements OnChanges {
     });
   }
 
-  // Whether any detail on this panel can be notified/escalated. Header wording only.
+  // Whether any detail on this panel can be notified. Header wording only.
   get anyNotifiable(): boolean {
     return !!(this.test && this.test.outcomeDetails &&
               this.test.outcomeDetails.some(detail => detail.notifiable));
@@ -227,11 +225,6 @@ export class TestSummaryComponent implements OnChanges {
     this._submitFault(detail, '/fault-report', this.reportStatuses);
   }
 
-  /**
-   * Escalate a KNOWN fault whose remediation steps did not resolve it. Distinct
-   * from reportFault: this goes to the /fault-escalate relay, which raises a
-   * higher-priority alert (a PagerDuty incident) rather than a routine report.
-   */
   escalateFault(detail: OutcomeDetail) {
     this._submitFault(detail, '/fault-escalate', this.escalateStatuses);
   }
@@ -241,7 +234,7 @@ export class TestSummaryComponent implements OnChanges {
   }
 
   /**
-   * Shared submit for both report and escalate. While the request is in flight
+   * Submit a fault report. While the request is in flight
    * the button shows a spinner and is disabled; the result (sent / error) is
    * shown inline so the operator stops clicking. On error the button re-enables
    * so they can retry.
