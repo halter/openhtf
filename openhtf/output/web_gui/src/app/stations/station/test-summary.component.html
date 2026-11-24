@@ -14,14 +14,6 @@
  limitations under the License.
 -->
 
-<!--
-  Operator fault panel: shown when the test record carries structured
-  outcome_details (Halter records an operator-facing fault code + remediation
-  there on a failed test). Rendered prominently above the summary so an
-  operator returning to a failed test sees the code and what to do.
--->
-<!-- Intercept panel: someone requested this unit. The outcome is unchanged; the
-     operator hands the unit over instead of returning it to the line. -->
 <div
   class="htf-layout-widget operator-intercept-panel"
   *ngIf="showInterceptPanel">
@@ -51,6 +43,12 @@
     </div>
   </div>
 </div>
+<!--
+  Operator fault panel: shown when the test record carries structured
+  outcome_details (Halter records an operator-facing fault code + remediation
+  there on a failed test). Rendered prominently above the summary so an
+  operator returning to a failed test sees the code and what to do.
+-->
 <div
   class="htf-layout-widget operator-fault-panel"
   *ngIf="showFaultPanel">

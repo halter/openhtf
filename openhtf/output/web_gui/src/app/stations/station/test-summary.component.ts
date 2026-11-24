@@ -45,12 +45,12 @@ export type FaultPanelLanguage = 'en'|'th';
 // not per test/card) so an operator's choice sticks across tests and reloads.
 const LANGUAGE_STORAGE_KEY = 'htf-fault-panel-language';
 
-// Static fault-panel strings, hardcoded bilingual (the catalogue's per-fault
-// text arrives already translated via description_th). The run-specific detail
-// text is not translated.
 // Wire contract with hardware_test_framework services/intercept.py INTERCEPT_CODE.
 const INTERCEPT_CODE = 'INTERCEPT';
 
+// Static fault-panel strings, hardcoded bilingual (the catalogue's per-fault
+// text arrives already translated via description_th). The run-specific detail
+// text is not translated.
 const PANEL_LABELS: {[lang in FaultPanelLanguage]: {[key: string]: string}} = {
   en: {
     header: 'TEST FAILED — ACTION REQUIRED',
@@ -135,7 +135,6 @@ export class TestSummaryComponent implements OnChanges {
     return this.interceptDetails.length > 0 && this.test.status !== TestStatus.aborted;
   }
 
-  // An intercept is a request to set the unit aside, not a fault: it gets its own panel.
   get interceptDetails(): OutcomeDetail[] {
     return this.outcomeDetails.filter(detail => detail.code === INTERCEPT_CODE);
   }
