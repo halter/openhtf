@@ -48,10 +48,14 @@ const LANGUAGE_STORAGE_KEY = 'htf-fault-panel-language';
 // Static fault-panel strings, hardcoded bilingual (the catalogue's per-fault
 // text arrives already translated via description_th). The run-specific detail
 // text is not translated.
+// Wire contract with hardware_test_framework services/intercept.py INTERCEPT_CODE.
+const INTERCEPT_CODE = 'INTERCEPT';
+
 const PANEL_LABELS: {[lang in FaultPanelLanguage]: {[key: string]: string}} = {
   en: {
     header: 'TEST FAILED — ACTION REQUIRED',
     headerDutFail: 'TEST FAILED — UNIT DID NOT MEET SPEC',
+    interceptHeader: 'INTERCEPT — SET THIS UNIT ASIDE',
     whatToDo: 'What to do',
     escalateHint: `Steps didn't fix it? This raises an incident with the on-call team.`,
     escalateSending: 'Reporting…',
@@ -70,6 +74,7 @@ const PANEL_LABELS: {[lang in FaultPanelLanguage]: {[key: string]: string}} = {
   th: {
     header: 'การทดสอบล้มเหลว — ต้องดำเนินการ',
     headerDutFail: 'การทดสอบล้มเหลว — ชิ้นงานไม่ผ่านเกณฑ์',
+    interceptHeader: 'INTERCEPT — แยกชิ้นงานนี้ไว้',
     whatToDo: 'สิ่งที่ต้องทำ',
     escalateHint: 'ทำตามขั้นตอนแล้วยังไม่หาย? ปุ่มนี้จะแจ้งเหตุไปยังทีมออนคอล',
     escalateSending: 'กำลังรายงาน…',
@@ -123,9 +128,24 @@ export class TestSummaryComponent implements OnChanges {
   // (e.g. the station service restarting on a deploy), not a fault, so its
   // details must not surface as an operator action.
   get showFaultPanel(): boolean {
-    return !!(this.test && this.test.outcomeDetails &&
-              this.test.outcomeDetails.length &&
-              this.test.status !== TestStatus.aborted);
+    return this.faultDetails.length > 0 && this.test.status !== TestStatus.aborted;
+  }
+
+  get showInterceptPanel(): boolean {
+    return this.interceptDetails.length > 0 && this.test.status !== TestStatus.aborted;
+  }
+
+  // An intercept is a request to set the unit aside, not a fault: it gets its own panel.
+  get interceptDetails(): OutcomeDetail[] {
+    return this.outcomeDetails.filter(detail => detail.code === INTERCEPT_CODE);
+  }
+
+  get faultDetails(): OutcomeDetail[] {
+    return this.outcomeDetails.filter(detail => detail.code !== INTERCEPT_CODE);
+  }
+
+  private get outcomeDetails(): OutcomeDetail[] {
+    return (this.test && this.test.outcomeDetails) || [];
   }
 
   /**
@@ -155,8 +175,7 @@ export class TestSummaryComponent implements OnChanges {
 
   // Whether any detail on this panel can be notified. Header wording only.
   get anyNotifiable(): boolean {
-    return !!(this.test && this.test.outcomeDetails &&
-              this.test.outcomeDetails.some(detail => detail.notifiable));
+    return this.faultDetails.some(detail => detail.notifiable);
   }
 
   // Stable identity for a fault detail across re-polls (object identity is not).

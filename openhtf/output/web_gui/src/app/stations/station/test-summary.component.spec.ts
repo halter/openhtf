@@ -117,4 +117,29 @@ describe('test summary component', () => {
       expect(element.textContent).not.toContain('support QR');
     }
   });
+
+  it('should show an intercept in its own panel, with no fault panel or button', () => {
+    hostComponent.test.status = TestStatus.pass;
+    hostComponent.test.outcomeDetails = [{
+      ...makeDetail(false),
+      code: 'INTERCEPT',
+      issue: 'Give to Sam',
+      whatToDo: 'Bring it to the returns bench',
+    }];
+    fixture.detectChanges();
+    expect(element.querySelector('.operator-intercept-panel')).not.toBeNull();
+    expect(element.querySelector('.operator-fault-panel')).toBeNull();
+    expect(element.querySelector('.operator-fault-report-button')).toBeNull();
+    expect(element.textContent).toContain('Give to Sam');
+  });
+
+  it('should show both panels when an intercepted unit also failed', () => {
+    hostComponent.test.outcomeDetails = [
+      makeDetail(false),
+      {...makeDetail(false), code: 'INTERCEPT', issue: 'Give to Sam'},
+    ];
+    fixture.detectChanges();
+    expect(element.querySelector('.operator-intercept-panel')).not.toBeNull();
+    expect(element.querySelector('.operator-fault-panel')).not.toBeNull();
+  });
 });

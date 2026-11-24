@@ -21,6 +21,23 @@
   margin-bottom: $widget-inner-padding;
 }
 
+.operator-intercept-panel {
+  border: 2px solid $theme-blue;
+  margin-bottom: $widget-inner-padding;
+}
+
+.operator-intercept-header {
+  background: $theme-blue;
+  color: $theme-white;
+  font-weight: bold;
+}
+
+.operator-intercept-recipient {
+  font-size: 1.4em;
+  font-weight: bold;
+  white-space: pre-line;
+}
+
 .operator-fault-header {
   background: $theme-red;
   color: $theme-white;
