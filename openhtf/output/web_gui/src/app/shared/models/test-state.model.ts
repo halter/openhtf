@@ -41,6 +41,9 @@ export class PlugDescriptor { mro: string[]; }
 // TestRecord.outcome_details). Halter uses this to surface an operator-facing
 // fault code + remediation on a failed test; see the operator fault panel in
 // test-summary.component.
+// Wire contract with hardware_test_framework services/intercept.py INTERCEPT_CODE.
+export const INTERCEPT_CODE = 'INTERCEPT';
+
 export interface OutcomeDetail {
   code: string;
   issue: string;     // what went wrong (text before the "What to do:" marker)

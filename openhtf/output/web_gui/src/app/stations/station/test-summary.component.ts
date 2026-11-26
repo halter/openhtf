@@ -25,7 +25,7 @@ import { ConfigService } from '../../core/config.service';
 import { FlashMessageService } from '../../core/flash-message.service';
 import { logLevels } from '../../shared/models/log-record.model';
 import { Phase, PhaseStatus } from '../../shared/models/phase.model';
-import { OutcomeDetail, TestState, TestStatus } from '../../shared/models/test-state.model';
+import { INTERCEPT_CODE, OutcomeDetail, TestState, TestStatus } from '../../shared/models/test-state.model';
 import { ProgressBarComponent } from '../../shared/progress-bar.component';
 import { getStationBaseUrl } from '../../shared/util';
 
@@ -44,9 +44,6 @@ export type FaultPanelLanguage = 'en'|'th';
 // localStorage key for the fault panel language. Stored globally (per browser,
 // not per test/card) so an operator's choice sticks across tests and reloads.
 const LANGUAGE_STORAGE_KEY = 'htf-fault-panel-language';
-
-// Wire contract with hardware_test_framework services/intercept.py INTERCEPT_CODE.
-const INTERCEPT_CODE = 'INTERCEPT';
 
 // Static fault-panel strings, hardcoded bilingual (the catalogue's per-fault
 // text arrives already translated via description_th). The run-specific detail
