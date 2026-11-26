@@ -128,8 +128,9 @@ export class TestSummaryComponent implements OnChanges {
     return this.faultDetails.length > 0 && this.test.status !== TestStatus.aborted;
   }
 
+  // A unit intercepted at the start trigger ends ABORTED (nothing was tested), so the panel ignores the status.
   get showInterceptPanel(): boolean {
-    return this.interceptDetails.length > 0 && this.test.status !== TestStatus.aborted;
+    return this.interceptDetails.length > 0;
   }
 
   get interceptDetails(): OutcomeDetail[] {

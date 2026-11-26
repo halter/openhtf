@@ -133,6 +133,14 @@ describe('test summary component', () => {
     expect(element.textContent).toContain('Give to Sam');
   });
 
+  it('should show the intercept panel on a unit intercepted before its test', () => {
+    hostComponent.test.status = TestStatus.aborted;
+    hostComponent.test.outcomeDetails = [{...makeDetail(false), code: 'INTERCEPT', issue: 'Give to Sam'}];
+    fixture.detectChanges();
+    expect(element.querySelector('.operator-intercept-panel')).not.toBeNull();
+    expect(element.querySelector('.operator-fault-panel')).toBeNull();
+  });
+
   it('should show both panels when an intercepted unit also failed', () => {
     hostComponent.test.outcomeDetails = [
       makeDetail(false),

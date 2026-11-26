@@ -31,7 +31,7 @@ import { ConfigService } from '../../core/config.service';
 import { FlashMessageService } from '../../core/flash-message.service';
 import { Phase } from '../../shared/models/phase.model';
 import { Station } from '../../shared/models/station.model';
-import { TestState, TestStatus } from '../../shared/models/test-state.model';
+import { INTERCEPT_CODE, TestState, TestStatus } from '../../shared/models/test-state.model';
 import { SockJsMessage, SockJsService } from '../../shared/sock-js.service';
 import { Subscription } from '../../shared/subscription';
 import { getStationBaseUrl, getTestBaseUrl, messageFromErrorResponse } from '../../shared/util';
@@ -285,7 +285,8 @@ export class StationService extends Subscription {
               'details.');
         } else if (test.status === TestStatus.timeout) {
           this.flashMessage.warn('The test exited early due to timeout.');
-        } else if (test.status === TestStatus.aborted) {
+        } else if (test.status === TestStatus.aborted &&
+                   !test.outcomeDetails.some(detail => detail.code === INTERCEPT_CODE)) {
           this.flashMessage.warn('The test was aborted.');
         }
       }
