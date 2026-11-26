@@ -23,7 +23,7 @@ import { LogRecord } from '../../shared/models/log-record.model';
 import { Measurement, MeasurementStatus } from '../../shared/models/measurement.model';
 import { Phase, PhaseStatus } from '../../shared/models/phase.model';
 import { Station } from '../../shared/models/station.model';
-import { OutcomeDetail, PlugDescriptor, TestState, TestStatus } from '../../shared/models/test-state.model';
+import { INTERCEPT_CODE, OutcomeDetail, PlugDescriptor, TestState, TestStatus } from '../../shared/models/test-state.model';
 
 import { sortByProperty } from '../../shared/util';
 
@@ -207,8 +207,11 @@ export function makeTest(
           });
 
   const metadata = rawState.test_record.metadata;
-  const statusLabel =
-      status === TestStatus.pass ? metadata.status_label || null : null;
+  // An intercepted unit is handed over whatever its outcome, so its label replaces FAIL and ERROR too.
+  const intercepted = outcomeDetails.some(detail => detail.code === INTERCEPT_CODE);
+  const statusLabel = status === TestStatus.pass || intercepted ?
+      metadata.status_label || null :
+      null;
   const statusLabelColor = statusLabel &&
           statusLabelColors.indexOf(metadata.status_label_color) !== -1 ?
       metadata.status_label_color :

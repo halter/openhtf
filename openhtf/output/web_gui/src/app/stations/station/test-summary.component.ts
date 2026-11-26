@@ -25,7 +25,7 @@ import { ConfigService } from '../../core/config.service';
 import { FlashMessageService } from '../../core/flash-message.service';
 import { logLevels } from '../../shared/models/log-record.model';
 import { Phase, PhaseStatus } from '../../shared/models/phase.model';
-import { OutcomeDetail, TestState, TestStatus } from '../../shared/models/test-state.model';
+import { INTERCEPT_CODE, OutcomeDetail, TestState, TestStatus } from '../../shared/models/test-state.model';
 import { ProgressBarComponent } from '../../shared/progress-bar.component';
 import { getStationBaseUrl } from '../../shared/util';
 
@@ -52,6 +52,7 @@ const PANEL_LABELS: {[lang in FaultPanelLanguage]: {[key: string]: string}} = {
   en: {
     header: 'TEST FAILED — ACTION REQUIRED',
     headerDutFail: 'TEST FAILED — UNIT DID NOT MEET SPEC',
+    interceptHeader: 'INTERCEPT — SET THIS UNIT ASIDE',
     whatToDo: 'What to do',
     escalateHint: `Steps didn't fix it? This raises an incident with the on-call team.`,
     escalateSending: 'Reporting…',
@@ -70,6 +71,7 @@ const PANEL_LABELS: {[lang in FaultPanelLanguage]: {[key: string]: string}} = {
   th: {
     header: 'การทดสอบล้มเหลว — ต้องดำเนินการ',
     headerDutFail: 'การทดสอบล้มเหลว — ชิ้นงานไม่ผ่านเกณฑ์',
+    interceptHeader: 'INTERCEPT — แยกชิ้นงานนี้ไว้',
     whatToDo: 'สิ่งที่ต้องทำ',
     escalateHint: 'ทำตามขั้นตอนแล้วยังไม่หาย? ปุ่มนี้จะแจ้งเหตุไปยังทีมออนคอล',
     escalateSending: 'กำลังรายงาน…',
@@ -123,9 +125,24 @@ export class TestSummaryComponent implements OnChanges {
   // (e.g. the station service restarting on a deploy), not a fault, so its
   // details must not surface as an operator action.
   get showFaultPanel(): boolean {
-    return !!(this.test && this.test.outcomeDetails &&
-              this.test.outcomeDetails.length &&
-              this.test.status !== TestStatus.aborted);
+    return this.faultDetails.length > 0 && this.test.status !== TestStatus.aborted;
+  }
+
+  // A unit intercepted at the start trigger ends ABORTED (nothing was tested), so the panel ignores the status.
+  get showInterceptPanel(): boolean {
+    return this.interceptDetails.length > 0;
+  }
+
+  get interceptDetails(): OutcomeDetail[] {
+    return this.outcomeDetails.filter(detail => detail.code === INTERCEPT_CODE);
+  }
+
+  get faultDetails(): OutcomeDetail[] {
+    return this.outcomeDetails.filter(detail => detail.code !== INTERCEPT_CODE);
+  }
+
+  private get outcomeDetails(): OutcomeDetail[] {
+    return (this.test && this.test.outcomeDetails) || [];
   }
 
   /**
@@ -155,8 +172,7 @@ export class TestSummaryComponent implements OnChanges {
 
   // Whether any detail on this panel can be notified. Header wording only.
   get anyNotifiable(): boolean {
-    return !!(this.test && this.test.outcomeDetails &&
-              this.test.outcomeDetails.some(detail => detail.notifiable));
+    return this.faultDetails.some(detail => detail.notifiable);
   }
 
   // Stable identity for a fault detail across re-polls (object identity is not).

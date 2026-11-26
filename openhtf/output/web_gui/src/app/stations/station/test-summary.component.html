@@ -14,6 +14,35 @@
  limitations under the License.
 -->
 
+<div
+  class="htf-layout-widget operator-intercept-panel"
+  *ngIf="showInterceptPanel">
+  <div class="htf-layout-widget-header operator-intercept-header">
+    <div>{{ label('interceptHeader') }}</div>
+    <div class="u-flex-grow"></div>
+    <div class="operator-fault-language-toggle">
+      <button
+        type="button"
+        class="operator-fault-language-button"
+        [class.operator-fault-language-active]="language === 'en'"
+        (click)="setLanguage('en')">EN</button>
+      <button
+        type="button"
+        class="operator-fault-language-button"
+        [class.operator-fault-language-active]="language === 'th'"
+        (click)="setLanguage('th')">ไทย</button>
+    </div>
+  </div>
+  <div
+    class="htf-layout-widget-body operator-fault-detail"
+    *ngFor="let detail of interceptDetails">
+    <div class="operator-intercept-recipient">{{ issueText(detail) }}</div>
+    <div *ngIf="detail.whatToDo" class="operator-fault-action">
+      <div class="operator-fault-action-label">{{ label('whatToDo') }}</div>
+      <pre class="operator-fault-action-body">{{ whatToDoText(detail) }}</pre>
+    </div>
+  </div>
+</div>
 <!--
   Operator fault panel: shown when the test record carries structured
   outcome_details (Halter records an operator-facing fault code + remediation
@@ -44,7 +73,7 @@
   </div>
   <div
     class="htf-layout-widget-body operator-fault-detail"
-    *ngFor="let detail of test.outcomeDetails">
+    *ngFor="let detail of faultDetails">
     <!-- A unit fault leads with what this unit failed: the operator's decision is
          about the part in hand, and the spec list is the whole story. For a station
          fault the same text stays in the de-emphasised Issue block at the bottom,
